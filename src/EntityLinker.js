@@ -28,10 +28,11 @@ export default class EntityLinker extends Entity
       }
     }
 
-    /*
+    // compose the error message
     let errorMessage = "No such link found rel: " + rel;
-    console.error(errorMessage);
-    */
+    console.log(errorMessage);
+
+    // return empty link object
     return new Link(null, null);
   }
 

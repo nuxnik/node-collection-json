@@ -1,5 +1,6 @@
-import Entity from './Entity';
 import Data from './Data';
+import Entity from './Entity';
+import Library from './Library';
 
 /**
  * Creates a valid collection+json template object
@@ -22,7 +23,7 @@ export default class Template extends Entity
 
     // check the datas object
     let datasObject = Template.getObjectValueByKey(json, "data");
-    if (Template.isArray(datasObject)) {
+    if (Library.isArray(datasObject)) {
       for (const dataObject of datasObject) {
 
         // add the data

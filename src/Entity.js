@@ -20,22 +20,6 @@ export default class Entity
   }
 
   /**
-   * Helper method to check if a variable is an array
-   *
-   * @param {array} variable The variable to check
-   * @return boolean
-   */
-  static isArray(variable)
-  {
-    let result = false;
-    if( Object.prototype.toString.call( variable ) === '[object Array]' ) {
-      result = true;
-    }
-
-    return result;
-  }
-
-  /**
    * Output the collection to string format
    *
    * @return string
@@ -44,5 +28,4 @@ export default class Entity
   {
     return JSON.stringify(this.getJson());
   }
-
 }

@@ -3,6 +3,7 @@ import EntityLinker from './EntityLinker';
 import Error from './Error';
 import Item from './Item';
 import Link from './Link';
+import Library from './Library';
 import Query from './Query';
 import Template from './Template';
 import axios from 'axios';
@@ -109,13 +110,14 @@ export default class Collection extends EntityLinker
   /**
    * Import a collection string and transform into a collection object
    *
-   * @param String collection - The string to import
+   * @param {String} collection - The string to import
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    * @return Collection
    */
-  static getByObject(json)
+  static getByObject(json, config = {})
   {
-  //check the collection object
-  let collectionObject = Collection.getObjectValueByKey(json, Collection.COLLECTION);
+    //check the collection object
+    let collectionObject = Collection.getObjectValueByKey(json, Collection.COLLECTION);
     if (collectionObject === undefined) {
         //throw new CollectionError('collection Object undefined');
     }
@@ -133,16 +135,16 @@ export default class Collection extends EntityLinker
     }
 
     // create the collection object
-    let collection = new Collection(hrefString);
+    let collection = new Collection(hrefString, config);
 
     // check the links object
     let linksObject = Collection.getObjectValueByKey(collectionObject, Collection.LINKS);
-    if (Collection.isArray(linksObject)) {
+    if (Library.isArray(linksObject)) {
       for (const linkObject of linksObject) {
 
         // add the link
         try {
-          let link = Link.getByObject(linkObject);
+          let link = Link.getByObject(linkObject, config);
           collection.addLink(link);
         } catch(error) {
           // skip this link
@@ -152,12 +154,12 @@ export default class Collection extends EntityLinker
 
     // check the items object
     let itemsObject = Collection.getObjectValueByKey(collectionObject, Collection.ITEMS);
-    if (Collection.isArray(itemsObject)) {
+    if (Library.isArray(itemsObject)) {
       for (const itemObject of itemsObject) {
 
         // add the item
         try {
-          let item = Item.getByObject(itemObject);
+          let item = Item.getByObject(itemObject, config);
           collection.addItem(item);
         } catch(error) {
           // skip this item
@@ -167,12 +169,12 @@ export default class Collection extends EntityLinker
 
     // check the querys object
     let queriesObject = Collection.getObjectValueByKey(collectionObject, Collection.QUERIES);
-    if (Collection.isArray(queriesObject)) {
+    if (Library.isArray(queriesObject)) {
       for (const queryObject of queriesObject) {
 
         // add the query
         try {
-          let query = Query.getByObject(queryObject);
+          let query = Query.getByObject(queryObject, config);
           collection.addQuery(query);
         } catch(error) {
           console.log(error.message);
@@ -212,11 +214,17 @@ export default class Collection extends EntityLinker
   /**
    * The class constructor
    *
-   * @param string url The api root uri
+   * @param {String} url The api root uri
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    */
-  constructor(uri)
+  constructor(uri, config = {}) 
   {
     super();
+
+    /**
+     * The axios configuration object.
+     */
+    this.config = config;
 
     /**
      * The default content type header
@@ -534,7 +542,7 @@ export default class Collection extends EntityLinker
    *
    * @return Promise
    */
-  post()
+  post(config = {})
   {
     return this.dispatch('post');
   }
@@ -544,7 +552,7 @@ export default class Collection extends EntityLinker
    *
    * @return Promise
    */
-  put(resource)
+  put(resource, config = {})
   {
     return this.dispatch('put', resource);
   }
@@ -554,30 +562,38 @@ export default class Collection extends EntityLinker
    *
    * @return Promise
    */
-  dispatch(method, resource = null)
+  dispatch(method, resource = null, config = {})
   {
-    // create the template string
-    let templateData = {};
-    templateData.template = this.getTemplate().getJson();
-    let templateString = JSON.stringify(templateData);
+    // set the method
+    config.method = method;
 
     // set the resource
     let url = this.getHref();
     if (resource !== null) {
       url = resource;
     }
+    config.url = url;
+
+    // add the content type header
+    if (config.headers === null) {
+      config.headers = {};
+    }
+    config.headers["Content-Type"] = this.contentType;
+
+    // create the template payload
+    let templateData = {};
+    templateData.template = this.getTemplate().getJson();
+    config.data = JSON.stringify(templateData);
+
+    // get the config values
+    let mergedConfig = Library.mergeConfigurationValues(this.config, config);
 
     // dispatch
     switch (method) {
       case 'put':
       case 'post':
         return new Promise( (resolve, reject) => {
-          axios({
-            method: method,
-            url: url,
-            headers: {'Content-Type': this.contentType},
-            data: templateString,
-          }).then( (response) => {
+          axios(mergedConfig).then( (response) => {
             return resolve(Collection.getByObject(response.data));
           }).catch ( error => {
             return reject(Collection.getByObject(error.response.data));
@@ -589,5 +605,4 @@ export default class Collection extends EntityLinker
         throw new Error("Method type: " + method + " not found");
     }
   }
-
 }

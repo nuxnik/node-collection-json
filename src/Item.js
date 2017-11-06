@@ -1,6 +1,7 @@
 import Collection from './Collection';
 import Data from './Data';
 import EntityLinker from './EntityLinker';
+import Library from './Library';
 import Link from './Link';
 import axios from 'axios';
 
@@ -16,11 +17,11 @@ export default class Item extends EntityLinker
   /**
    * Get item object by json data object
    *
-   * @todo - finish this
    * @param {Object} json The JSON object
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    * @return item
    */
-  static getByObject(json)
+  static getByObject(json, config = {})
   {
     //check the href
     let hrefString = Item.getObjectValueByKey(json, "href");
@@ -29,11 +30,11 @@ export default class Item extends EntityLinker
     }
 
     // init the Item object
-    let item = new Item(hrefString);
+    let item = new Item(hrefString, config);
 
     // check the datas object
     let datasObject = Item.getObjectValueByKey(json, "data");
-    if (Item.isArray(datasObject)) {
+    if (Library.isArray(datasObject)) {
       for (const dataObject of datasObject) {
 
         // add the data
@@ -48,12 +49,12 @@ export default class Item extends EntityLinker
 
     // check the links object
     let linksObject = Item.getObjectValueByKey(json, "links");
-    if (Item.isArray(linksObject)) {
+    if (Library.isArray(linksObject)) {
       for (const linkObject of linksObject) {
 
         // add the link
         try {
-          let link = Link.getByObject(linkObject);
+          let link = Link.getByObject(linkObject, config);
           item.addLink(link);
         } catch(error) {
           // skip this link
@@ -68,12 +69,17 @@ export default class Item extends EntityLinker
    * The class constructor
    *
    * @param string href The href uri
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    */
-  constructor(href)
+  constructor(href, config = {})
   {
     super();
-
     this.setHref(href);
+
+    /**
+     * The global axios client configuration object
+     */
+    this.config = config;
 
     /**
      * The data object
@@ -249,26 +255,35 @@ export default class Item extends EntityLinker
   /**
    * Delete the item from the server
    *
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    * @return Promise<Collection>
    */
-  delete()
+  delete(config = {})
   {
+    // get the config values
+    let mergedConfig = Library.mergeConfigurationValues(this.config, config);
+
     return new Promise( (resolve, reject) => {
-      axios.delete(this.getHref()).then( (response) => {
+      axios.delete(this.getHref(), mergedConfig).then( (response) => {
         return resolve(Collection.getByObject(response.data));
       }).catch( error => {
         return resolve(Collection.getByObject(error.response.data));
-      })
+      });
     });
   }
 
   /**
    * Follow the href link
    *
+   * @param {Array} params Extra params to add to the url
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    * @return Promise
    */
-  follow(params = null)
+  follow(params = null, config = {})
   {
+    // get the config values
+    let mergedConfig = Library.mergeConfigurationValues(this.config, config);
+
     return new Promise( (resolve, reject) => {
       let url = this.getHref();
       if (params !== null && params.constructor === Array) {
@@ -277,11 +292,11 @@ export default class Item extends EntityLinker
             url += '&' + key + '=' + params[key];
         }
       }
-      axios.get(url).then( (response) => {
+      axios.get(url, mergedConfig).then( (response) => {
         return resolve(Collection.getByObject(response.data));
       }).catch( error => {
-        return reject(Collection.getByObject(error.response.data));
-      })
+        return reject(Collection.getByObject(error.response.data, mergedConfig));
+      });
     });
   }
 }

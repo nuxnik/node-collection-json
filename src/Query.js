@@ -1,6 +1,7 @@
 import Collection from './Collection';
 import Data from './Data';
 import Entity from './Entity';
+import Library from './Library';
 import axios from 'axios';
 
 /**
@@ -14,11 +15,11 @@ export default class Query extends Entity
   /**
    * Get query object by json data object
    *
-   * @todo - finish this
    * @param {Object} json The JSON object
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    * @return query
    */
-  static getByObject(json)
+  static getByObject(json, config = {})
   {
     //check the href
     let hrefString = Query.getObjectValueByKey(json, "href");
@@ -36,11 +37,11 @@ export default class Query extends Entity
     let promptString = Query.getObjectValueByKey(json, "prompt");
 
     // init the object
-    let query = new Query(hrefString, relString, promptString);
+    let query = new Query(hrefString, relString, promptString, config);
 
     // check the data object
     let datasObject = Query.getObjectValueByKey(json, "data");
-    if (Query.isArray(datasObject)) {
+    if (Library.isArray(datasObject)) {
       for (const dataObject of datasObject) {
 
         // add the data
@@ -59,13 +60,18 @@ export default class Query extends Entity
    * The class constructor
    *
    */
-  constructor(href, rel, prompt = null)
+  constructor(href, rel, prompt = null, config = {})
   {
     super();
 
     this.setHref(href);
     this.setRel(rel);
     this.setPrompt(prompt);
+
+    /**
+     * The global axios client configuration object
+     */
+    this.config = config;
 
     /**
      * The data object
@@ -196,20 +202,24 @@ export default class Query extends Entity
   /**
    * Query the server
    *
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    * @return Promise<Collection>
    */
-  query()
+  query(config = {})
   {
+    // get the config values
+    let mergedConfig = Library.mergeConfigurationValues(this.config, config);
+
     // build the query
     let href = this.getHref() + '?';
     for (const data of this.getData()) {
       href = href + data.getName() + '=' + data.getValue() + '&';
     }
     return new Promise( (resolve, reject) => {
-      axios.get(href).then( (response) => {
+      axios.get(href, mergedConfig).then( (response) => {
         return resolve(Collection.getByObject(response.data));
       }).catch( error => {
-        return resolve(Collection.getByObject(error.response.data));
+        return resolve(Collection.getByObject(error.response.data, mergedConfig));
       });
     });
   }

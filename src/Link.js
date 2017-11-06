@@ -1,5 +1,6 @@
 import Collection from './Collection';
 import Entity from './Entity';
+import Library from './Library';
 import axios from 'axios';
 
 /**
@@ -12,29 +13,14 @@ import axios from 'axios';
 export default class Link extends Entity
 {
   /**
-   * The class constructor
-   *
-   * @param string href The link uri
-   * @param string rel The relational element
-   */
-  constructor(href, rel, render = null)
-  {
-    super();
-
-    this.setHref(href);
-    this.setRel(rel);
-    this.setRender(render);
-    this.setPrompt('');
-  }
-
-  /**
    * Get link object by json data object
    *
    * @todo - finish this
    * @param {Object} json The JSON object
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    * @return Link
    */
-  static getByObject(json)
+  static getByObject(json, config = {})
   {
     //check the href
     let hrefString = Link.getObjectValueByKey(json, "href");
@@ -51,7 +37,7 @@ export default class Link extends Entity
     //check the render
     let renderString = Link.getObjectValueByKey(json, "render");
 
-    let link = new Link(hrefString, relString, renderString);
+    let link = new Link(hrefString, relString, renderString, config);
 
     //check the prompt
     let promptString = Link.getObjectValueByKey(json, "prompt");
@@ -60,6 +46,29 @@ export default class Link extends Entity
     }
 
     return link;
+  }
+
+  /**
+   * The class constructor
+   *
+   * @param string href The link uri
+   * @param string rel The relational element
+   * @param string render The render type
+   * @param {Object} config The axios configuration object. See axios documentation for more options
+   */
+  constructor(href, rel, render = null, config = {})
+  {
+    super();
+
+    /**
+     * The global axios client configuration object
+     */
+    this.config = config;
+
+    this.setHref(href);
+    this.setRel(rel);
+    this.setRender(render);
+    this.setPrompt('');
   }
 
   /**
@@ -157,10 +166,15 @@ export default class Link extends Entity
   /**
    * Follow a link and return the collection object
    *
+   * @param {Array} params Extra params to add to the url
+   * @param {Object} config The axios configuration object. See axios documentation for more options
    * @return Collection
    */
-  follow(params = null)
+  follow(params = null, config = {})
   {
+    // get the config values
+    let mergedConfig = Library.mergeConfigurationValues(this.config, config);
+
     return new Promise( (resolve, reject) => {
       let url = this.getHref();
       if (params !== null && params.constructor === Array) {
@@ -169,10 +183,10 @@ export default class Link extends Entity
             url += '&' + key + '=' + params[key];
         }
       }
-      axios.get(url).then( (response) => {
+      axios.get(url, mergedConfig).then( (response) => {
         return resolve(Collection.getByObject(response.data));
       }).catch( error => {
-        return reject(Collection.getByObject(error.response.data));
+        return reject(Collection.getByObject(error.response.data, mergedConfig));
       });
     });
   }

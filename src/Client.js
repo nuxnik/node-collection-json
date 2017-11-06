@@ -28,28 +28,13 @@ export default class Client
   }
 
   /**
-   * Call the API and get collection object
-   *
-   * @return Promise
-   */
-  static getCollectionByResource(resource)
-  {
-    return new Promise( (resolve, reject) => {
-      axios.get(resource).then( (response) => {
-        return resolve(Collection.getByObject(response.data));
-      }).catch( error => {
-        return reject(Collection.getByObject(error.response.data));
-      });
-    });
-  }
-
-  /**
    * The class constructor
    *
    * @param {mixed} resource The resource url or collection object
    * @param {String} type The type of resource
+   * @param {Object} config The axios option object. See axios documentation for possible configuration options
    */
-  constructor(resource, type = Client.API)
+  constructor(resource, type = Client.API, config = {})
   {
     /**
      * The main collection object
@@ -61,6 +46,11 @@ export default class Client
      */
     this.resource = null;
 
+    /**
+     * The global axios client configuration object
+     */
+    this.config = config;
+
     switch(type) {
       case Client.JSON:
         this.collection = resource;
@@ -71,6 +61,27 @@ export default class Client
         this.resource = resource;
         break;
     }
+  }
+
+  /**
+   * Call the API and get collection object
+   *
+   * @param {String} resource The resource string
+   * @param {Object} config The axios configuration object. See axios documentation for more options
+   * @return Promise
+   */
+  getCollectionByResource(resource, config = {})
+  {
+    // get the config values
+    let mergedConfig = Library.mergeConfigurationValues(this.config, config);
+
+    return new Promise( (resolve, reject) => {
+      axios.get(resource, mergedConfig).then( (response) => {
+        return resolve(Collection.getByObject(response.data, mergedConfig));
+      }).catch( error => {
+        return reject(Collection.getByObject(error.response.data, mergedConfig));
+      });
+    });
   }
 
   /**
@@ -87,5 +98,15 @@ export default class Client
         resolve(this.collection);
       });
     }
+  }
+
+  /**
+   * Get the resource string
+   *
+   * @return {String}
+   */
+  getResource()
+  {
+    return this.resource;
   }
 }
