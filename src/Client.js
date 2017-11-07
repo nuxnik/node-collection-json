@@ -1,4 +1,5 @@
 import Collection from './Collection';
+import Library from './Library';
 import axios from 'axios';
 
 /**
