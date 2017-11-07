@@ -32,10 +32,10 @@ export default class Client
    * The class constructor
    *
    * @param {mixed} resource The resource url or collection object
-   * @param {String} type The type of resource
    * @param {Object} config The axios option object. See axios documentation for possible configuration options
+   * @param {String} type The type of resource
    */
-  constructor(resource, type = Client.API, config = {})
+  constructor(resource, config = {}, type = Client.API)
   {
     /**
      * The main collection object

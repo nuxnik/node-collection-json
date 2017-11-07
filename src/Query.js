@@ -217,9 +217,9 @@ export default class Query extends Entity
     }
     return new Promise( (resolve, reject) => {
       axios.get(href, mergedConfig).then( (response) => {
-        return resolve(Collection.getByObject(response.data));
+        return resolve(Collection.getByObject(response.data, this.config));
       }).catch( error => {
-        return resolve(Collection.getByObject(error.response.data, mergedConfig));
+        return resolve(Collection.getByObject(error.response.data, this.config));
       });
     });
   }

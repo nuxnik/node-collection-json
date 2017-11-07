@@ -11,7 +11,6 @@ export default class Data extends Entity
   /**
    * Get data object by json data object
    *
-   * @todo - finish this
    * @param {Object} json The JSON object
    * @return data
    */

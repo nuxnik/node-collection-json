@@ -544,7 +544,7 @@ export default class Collection extends EntityLinker
    */
   post(config = {})
   {
-    return this.dispatch('post');
+    return this.dispatch('post', null, config);
   }
 
   /**
@@ -554,7 +554,7 @@ export default class Collection extends EntityLinker
    */
   put(resource, config = {})
   {
-    return this.dispatch('put', resource);
+    return this.dispatch('put', resource, config);
   }
 
   /**
@@ -567,6 +567,10 @@ export default class Collection extends EntityLinker
    */
   dispatch(method, resource = null, config = {})
   {
+    if(Object.keys(config).length === 0 && config.constructor === Object) {
+      config = this.config;
+    }
+
     // set the method
     config.method = method;
 
@@ -581,7 +585,11 @@ export default class Collection extends EntityLinker
     if (config.headers === undefined) {
       config.headers = {};
     }
-    config.headers["Content-Type"] = this.contentType;
+
+    // set the content type header
+    if (config.headers["Content-Type"] === undefined) {
+        config.headers["Content-Type"] = this.contentType;
+    }
 
     // create the template payload
     let templateData = {};

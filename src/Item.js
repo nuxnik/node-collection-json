@@ -265,9 +265,9 @@ export default class Item extends EntityLinker
 
     return new Promise( (resolve, reject) => {
       axios.delete(this.getHref(), mergedConfig).then( (response) => {
-        return resolve(Collection.getByObject(response.data));
+        return resolve(Collection.getByObject(response.data, this.config));
       }).catch( error => {
-        return resolve(Collection.getByObject(error.response.data));
+        return resolve(Collection.getByObject(error.response.data, this.config));
       });
     });
   }
@@ -293,9 +293,9 @@ export default class Item extends EntityLinker
         }
       }
       axios.get(url, mergedConfig).then( (response) => {
-        return resolve(Collection.getByObject(response.data));
+        return resolve(Collection.getByObject(response.data, this.config));
       }).catch( error => {
-        return reject(Collection.getByObject(error.response.data, mergedConfig));
+        return reject(Collection.getByObject(error.response.data, this.config));
       });
     });
   }

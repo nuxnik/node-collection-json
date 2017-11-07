@@ -184,9 +184,9 @@ export default class Link extends Entity
         }
       }
       axios.get(url, mergedConfig).then( (response) => {
-        return resolve(Collection.getByObject(response.data));
+        return resolve(Collection.getByObject(response.data, this.config));
       }).catch( error => {
-        return reject(Collection.getByObject(error.response.data, mergedConfig));
+        return reject(Collection.getByObject(error.response.data, this.config));
       });
     });
   }
