@@ -560,6 +560,9 @@ export default class Collection extends EntityLinker
   /**
    * Send template contents to the server and get new collection
    *
+   * @param {String} method The HTTP method
+   * @param {String} resource The resource URL string
+   * @param {Object} config The axios configuration object. See axios documentation for options
    * @return Promise
    */
   dispatch(method, resource = null, config = {})
@@ -585,18 +588,15 @@ export default class Collection extends EntityLinker
     templateData.template = this.getTemplate().getJson();
     config.data = JSON.stringify(templateData);
 
-    // get the config values
-    let mergedConfig = Library.mergeConfigurationValues(this.config, config);
-
     // dispatch
     switch (method) {
       case 'put':
       case 'post':
         return new Promise( (resolve, reject) => {
-          axios(mergedConfig).then( (response) => {
-            return resolve(Collection.getByObject(response.data));
+          axios(config).then( (response) => {
+            return resolve(Collection.getByObject(response.data, this.config));
           }).catch ( error => {
-            return reject(Collection.getByObject(error.response.data));
+            return reject(Collection.getByObject(error.response.data, this.config));
           });
         });
         break;
