@@ -578,7 +578,7 @@ export default class Collection extends EntityLinker
     config.url = url;
 
     // add the content type header
-    if (config.headers === null) {
+    if (config.headers === undefined) {
       config.headers = {};
     }
     config.headers["Content-Type"] = this.contentType;
