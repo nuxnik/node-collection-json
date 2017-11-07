@@ -92,7 +92,7 @@ export default class Client
   getCollection()
   {
     if (this.collection === null) {
-      return Client.getCollectionByResource(this.resource);
+      return this.getCollectionByResource(this.resource);
     } else {
       return new Promise( (resolve, reject) => {
         resolve(this.collection);
