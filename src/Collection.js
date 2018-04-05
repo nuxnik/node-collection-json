@@ -515,6 +515,26 @@ export default class Collection extends EntityLinker
   }
 
   /**
+   * Get item as a flattened vanilla JSON object
+   *
+   * @return Object
+   */
+  itemsAsJson()
+  {
+    let json = [];
+
+    // flatten the data into an object
+    if (this.getItems().length > 0) {
+      for (const item of this.getItems()) {
+        json.push(item.asJson());
+      }
+    }
+
+    return json;
+  }
+
+
+  /**
    * Get ContentType
    *
    * @return String

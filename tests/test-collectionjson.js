@@ -276,6 +276,8 @@ describe('Collection+Json Library', () => {
       expect(json.collection.items[0].links[1].href).to.equal(validLink.link);
       expect(json.collection.items[0].links[1].value).to.equal(validLink.value);
 
+      console.log("ITEMS", JSON.stringify(collection.itemsAsJson(), null, 2));
+
       done();
     });
   });

@@ -223,6 +223,25 @@ export default class Item extends EntityLinker
   }
 
   /**
+   * Get item as a flattened vanilla JSON object
+   *
+   * @return Object
+   */
+  asJson()
+  {
+    let json = {};
+
+    // flatten the data into an object
+    if (this.getData().length > 0) {
+      for (const data of this.getData()) {
+        json[data.getName()] = data.getValue();
+      }
+    }
+
+    return json;
+  }
+
+  /**
    * Get a template object modeled on the data is defined in the object
    *
    * @return Template
