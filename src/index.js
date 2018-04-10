@@ -8,6 +8,9 @@
 // The client - for the most post this is what you'll need
 export {default as CJClient} from './Client';
 
+// The client cache
+export {default as CJCache} from './Cache';
+
 // the main collection class
 export {default as CJCollection} from './Collection';
 

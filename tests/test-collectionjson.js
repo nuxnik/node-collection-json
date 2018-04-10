@@ -1,3 +1,4 @@
+import Cache from '../src/Cache';
 import Client from '../src/Client';
 import Collection from '../src/Collection';
 import Data from '../src/Data';
@@ -276,9 +277,44 @@ describe('Collection+Json Library', () => {
       expect(json.collection.items[0].links[1].href).to.equal(validLink.link);
       expect(json.collection.items[0].links[1].value).to.equal(validLink.value);
 
-      console.log("ITEMS", JSON.stringify(collection.itemsAsJson(), null, 2));
+      //console.log("ITEMS", JSON.stringify(collection.itemsAsJson(), null, 2));
 
       done();
     });
   });
+
+  describe('Data Cache', () => {
+    it('should cache the data', (done) => {
+
+      let resource = "http://example.org/friends/"
+      let collection = Collection.getByObject(JSON.parse(validCollection));
+      let client     = new Client(collection, {}, Client.JSON, new Cache(10));
+
+      // one
+      let coll = client.getCollectionByResource(resource);
+
+      // two
+      coll = client.getCollectionByResource(resource);
+
+      expect(2).to.equal(client.getCache().getAccessedByResource(resource));
+      done();
+    });
+
+    it('should not cache the data', (done) => {
+
+      let resource = "http://example.org/friends/"
+      let collection = Collection.getByObject(JSON.parse(validCollection));
+      let client     = new Client(collection, {}, Client.JSON, new Cache(0));
+
+      // one
+      let coll = client.getCollectionByResource(resource);
+
+      // two
+      coll = client.getCollectionByResource(resource);
+
+      expect(0).to.equal(client.getCache().getAccessedByResource(resource));
+      done();
+    });
+  });
+
 });
