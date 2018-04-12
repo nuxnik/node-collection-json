@@ -1,4 +1,5 @@
 import Collection from './Collection';
+import Cache from './Cache';
 import Library from './Library';
 import axios from 'axios';
 
