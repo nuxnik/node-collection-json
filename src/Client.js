@@ -90,7 +90,7 @@ export default class Client
           let collection = Collection.getByObject(response.data, mergedConfig);
           this.cache.addCollection(collection);
 
-          return resolve(Collection.getByObject(collection));
+          return resolve(collection);
         }).catch( error => {
           let collection = Collection.getByObject(error.response.data, mergedConfig);
           this.cache.addCollection(collection);
