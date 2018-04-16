@@ -608,13 +608,15 @@ export default class Collection extends EntityLinker
 
     // set the content type header
     if (config.headers["Content-Type"] === undefined) {
-        config.headers["Content-Type"] = this.contentType;
+      config.headers["Content-Type"] = this.contentType;
     }
 
     // create the template payload
     let templateData = {};
     templateData.template = this.getTemplate().getJson();
-    config.data = JSON.stringify(templateData);
+    if( typeof config.data == "undefined") {
+      config.data = JSON.stringify(templateData);
+    }
 
     // dispatch
     switch (method) {

@@ -148,9 +148,7 @@ export default class Client
         return collection.getLinkByRel(rel).follow().then( collection => {
           return this.hop(modifiedPath, collection);
         }).catch( errorCollection => {
-          return new Promise( (resolve, reject) => {
-              return resolve(errorCollection);
-          });
+          return errorCollection;
         });
       }
     }
