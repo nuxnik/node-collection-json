@@ -21,6 +21,15 @@ export default class Client
   }
 
   /**
+   * The API type
+   *
+   * @return string
+   */
+  static get DELIMITER() {
+    return ".";
+  }
+
+  /**
    * The JSON type
    *
    * @return string
@@ -115,6 +124,37 @@ export default class Client
         resolve(this.collection);
       });
     }
+  }
+
+  /**
+   * Hop the API links recursively
+   *
+   * @param {String} path The rel path to follow
+   * @param {Collection} collection The collection to crawl
+   * @return Promise
+   */
+  hop(path, collection = null)
+  {
+    if (path !== '') {
+      let rels         = path.split(Client.DELIMITER);
+      let rel          = rels.shift();
+      let modifiedPath = rels.join(Client.DELIMITER);
+
+      if (collection == null) {
+        return this.getCollection().then(collection => {
+          return this.hop(path, collection);
+        });
+      } else {
+        return collection.getLinkByRel(rel).follow().then( collection => {
+          return this.hop(modifiedPath, collection);
+        }).catch( errorCollection => {
+          return new Promise( (resolve, reject) => {
+              return resolve(errorCollection);
+          });
+        });
+      }
+    }
+    return collection;
   }
 
   /**

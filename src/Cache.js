@@ -110,6 +110,20 @@ export default class Cache
   }
 
   /**
+   * Clean the cache by resource name
+   *
+   * @param {String} resource The resource key
+   * @return Cache
+   */
+  cleanByResource( resource )
+  {
+    if ( resource in this.cache ) {
+       delete this.cache[resource];
+    }
+    return this;
+  }
+
+  /**
    * Add a collection to the cache
    *
    * @since Tue Apr 10 11:45:20 CEST 2018

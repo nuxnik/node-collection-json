@@ -87,15 +87,15 @@ describe('Collection+JSON Client', () => {
   describe('Read', () => {
     it('should read a collection resource', (done) => {
 
-      let collection = Collection.getByObject(JSON.parse(validCollection));
+      let response = JSON.parse(validCollection);
+      let collection = Collection.getByObject(response);
       let client = new Client(collection, {}, Client.JSON );
       client.getCollection().then( collection => {
         expect(collection.getHref()).to.equal(collection.getHref());
-      })
+      });
 
       done();
     });
   });
-
 });
 
