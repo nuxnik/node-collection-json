@@ -613,7 +613,7 @@ export default class Collection extends EntityLinker
 
     // create the template payload
     let templateData = {};
-    if( typeof config.data == "undefined") {
+    if( typeof config.data != "undefined") {
       for(const key in config.data) {
         this.getTemplate().setData(key, config.data[key]);
       }

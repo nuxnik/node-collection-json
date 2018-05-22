@@ -1,4 +1,5 @@
 import Collection from './Collection';
+import CollectionError from './CollectionError';
 import Data from './Data';
 import EntityLinker from './EntityLinker';
 import Library from './Library';

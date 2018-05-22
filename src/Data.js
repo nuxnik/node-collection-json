@@ -1,3 +1,4 @@
+import CollectionError from './CollectionError';
 import Entity from './Entity';
 
 /**
