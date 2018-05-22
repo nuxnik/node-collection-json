@@ -1,6 +1,6 @@
 {
   "name": "node-collection-json",
-  "version": "1.1.19",
+  "version": "1.1.20",
   "description": "Lightweight nodejs tools for easy manipulation of collection+json objects",
   "main": "lib/index.js",
   "directories": {
@@ -29,7 +29,7 @@
   "homepage": "https://github.com/nuxnik/node-collection-json#readme",
   "dependencies": {
     "axios": "^0.16.2",
-    "http-status": "^1.0.1"
+    "http-status": "^1.1.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
