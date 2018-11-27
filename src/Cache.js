@@ -1,12 +1,12 @@
-import Collection from './Collection';
 import Client from './Client';
+import Collection from './Collection';
 
 /**
  * Class: Cache
  *
  * Caches collection objects for optimized retrieval
  *
- * @author S. Fleming <s.fleming@sma-dev.de>
+ * @author S. Fleming <nuxnik@int5.net>
  * @since Tue Apr 10 11:38:43 CEST 2018
  */
 export default class Cache

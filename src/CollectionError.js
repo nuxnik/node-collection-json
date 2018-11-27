@@ -1,5 +1,3 @@
-import httpStatus from 'http-status';
-
 /**
  * @extends Error
  */

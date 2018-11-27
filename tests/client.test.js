@@ -1,12 +1,9 @@
 import Cache from '../src/Cache';
 import Client from '../src/Client';
 import Collection from '../src/Collection';
-import Data from '../src/Data';
 import Error from '../src/Error';
-import Item from '../src/Item';
-import Link from '../src/Link';
 import Template from '../src/Template';
-import chai, { expect, assert } from 'chai';
+import chai, { expect } from 'chai';
 
 chai.config.includeStack = true;
 

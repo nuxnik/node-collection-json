@@ -3,7 +3,7 @@
  *
  * General static methods needed in this project
  *
- * @author S. Fleming <s.fleming@sma-dev.de>
+ * @author S. Fleming <nuxnik@int5.net>
  * @since Mon Nov  6 15:02:42 CET 2017
  */
  export default class Library

@@ -17,8 +17,6 @@ export default class EntityLinker extends Entity
    */
   getLinkByRel(rel)
   {
-    let link = null;
-
     // check the links object
     if (this.links !== null && this.links.length > 0) {
       for (const link of this.links) {

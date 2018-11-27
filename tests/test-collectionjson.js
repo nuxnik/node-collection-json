@@ -6,7 +6,7 @@ import Error from '../src/Error';
 import Item from '../src/Item';
 import Link from '../src/Link';
 import Template from '../src/Template';
-import chai, { expect, assert } from 'chai';
+import chai, { expect } from 'chai';
 
 chai.config.includeStack = true;
 
@@ -286,17 +286,16 @@ describe('Collection+Json Library', () => {
   describe('Data Cache', () => {
     it('should cache the data', (done) => {
 
-      let resource = "http://example.org/friends/"
-      let collection = Collection.getByObject(JSON.parse(validCollection));
-      let client     = new Client(collection, {}, Client.JSON, new Cache(10));
+      let numberAccessed = 5;
+      let coll           = null;
+      let resource       = "http://example.org/friends/"
+      let collection     = Collection.getByObject(JSON.parse(validCollection));
+      let client         = new Client(collection, {}, Client.JSON, new Cache(100));
+      for (var i = 0; i < numberAccessed; i++) {
+        coll = client.getCollectionByResource(resource);
+      }
 
-      // one
-      let coll = client.getCollectionByResource(resource);
-
-      // two
-      coll = client.getCollectionByResource(resource);
-
-      expect(2).to.equal(client.getCache().getAccessedByResource(resource));
+      expect(numberAccessed).to.equal(client.getCache().getAccessedByResource(resource));
       done();
     });
 
@@ -305,12 +304,6 @@ describe('Collection+Json Library', () => {
       let resource = "http://example.org/friends/"
       let collection = Collection.getByObject(JSON.parse(validCollection));
       let client     = new Client(collection, {}, Client.JSON, new Cache(0));
-
-      // one
-      let coll = client.getCollectionByResource(resource);
-
-      // two
-      coll = client.getCollectionByResource(resource);
 
       expect(0).to.equal(client.getCache().getAccessedByResource(resource));
       done();

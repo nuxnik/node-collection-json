@@ -1,4 +1,3 @@
-import CollectionError from './CollectionError';
 import EntityLinker from './EntityLinker';
 import Error from './Error';
 import Item from './Item';

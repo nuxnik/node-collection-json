@@ -150,7 +150,8 @@ export default class Template extends Entity
         }
         return this;
       }
-    };
+    }
+
     this.addData(new Data(name, value, prompt));
     return this;
   }
