@@ -7,7 +7,7 @@ import axios from 'axios';
 /**
  * Creates a valid collection+json link object
  *
- * @author S. Fleming <npm@int5.net>
+ * @author S. Fleming <nuxnik@int5.net>
  * @since Tue Jul 25 11:07:32 CEST 2017
  *
  */

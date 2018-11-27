@@ -4,7 +4,7 @@ import Entity from './Entity';
 /**
  * Creates a valid collection+json error object
  *
- * @author S. Fleming <npm@int5.net>
+ * @author S. Fleming <nuxnik@int5.net>
  * @since Tue Jul 25 11:07:32 CEST 2017
  */
 export default class Error extends Entity

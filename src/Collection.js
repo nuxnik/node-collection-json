@@ -10,7 +10,7 @@ import axios from 'axios';
 /**
  * Creates and validates collection+json object
  *
- * @author S. Fleming <npm@int5.net>
+ * @author S. Fleming <nuxnik@int5.net>
  * @since Tue Jul 25 11:07:32 CEST 2017
  */
 export default class Collection extends EntityLinker

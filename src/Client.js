@@ -6,7 +6,7 @@ import axios from 'axios';
 /**
  * Class: Client for communication with collection+json enabled servers
  *
- * @author S. Fleming <npm@int5.net>
+ * @author S. Fleming <nuxnik@int5.net>
  * @since Mon Aug 14 16:47:09 CEST 2017
  */
 export default class Client

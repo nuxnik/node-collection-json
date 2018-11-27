@@ -1,7 +1,7 @@
 /**
  * Entity class. Used as an abstract class with helper methods that all Collection+JSON classes inherit.
  *
- * @author S. Fleming <npm@int5.net>
+ * @author S. Fleming <nuxnik@int5.net>
  * @since Tue Aug  8 15:15:35 CEST 2017
  */
 export default class Entity

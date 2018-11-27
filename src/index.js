@@ -1,7 +1,7 @@
 /**
  * Entry point for node-collection-json module
  *
- * @author S. Fleming <npm@int5.net>
+ * @author S. Fleming <nuxnik@int5.net>
  * @since Mon Aug 21 13:52:24 CEST 2017
  */
 
