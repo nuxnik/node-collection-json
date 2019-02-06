@@ -1,6 +1,6 @@
 # node-collection-json
-Lightweight nodejs tools for easy manipulation of collection+json objects.  Reference for [collection+json](http://amundsen.com/media-types/collection/)
-Hypermedia type.
+
+Lightweight JavaScript client/server for easy data exchange and manipulation of objects in a [Collection+JSON](http://amundsen.com/media-types/collection/) API. This library can be used in the browser and also server-side.
 
 # Client Usage
 
@@ -59,6 +59,8 @@ The calls to the API listed below are based on an imaginary API which has the fo
 
 ## Query/Crawl the API
 
+Query and crawl the Collection+JSON API.
+
 ```javascript
 import {CJClient} from 'node-collection-json';
 
@@ -83,6 +85,8 @@ client.getCollection().then( collection => {
 ```
 
 ##  POST Data to the API
+
+Post data to the API from the Template object.
 
 ```javascript
 import {CJClient} from 'node-collection-json';
@@ -125,6 +129,8 @@ client.getCollection().then( collection => {
 ```
 
 ##  Query/Update the API
+
+Update data based on the Template object.
 
 ```javascript
 import {CJClient} from 'node-collection-json';
@@ -177,6 +183,8 @@ client.getCollection().then( collection => {
 });
 ```
 ##  Query/Delete from API
+
+Query/crawl the API and delete and Item.
 
 ```javascript
 import {CJClient} from 'node-collection-json';
