@@ -229,6 +229,16 @@ describe('Collection+Json Library', () => {
       expect(json.data[1].value).to.equal(validTemplate.data[1].value);
       expect(json.links[1].href).to.equal(validLink.link);
       expect(json.links[1].value).to.equal(validLink.value);
+
+      // test the getter
+      let expectedValue = item.get(validTemplate.data[0].name);
+      expect(expectedValue).to.equal(validTemplate.data[0].value);
+
+      // test the setter
+      let value = "1234";
+      item.set(validTemplate.data[0].name, value)
+      expectedValue = item.get(validTemplate.data[0].name);
+      expect(expectedValue).to.equal(value);
       done();
     });
   });
@@ -309,5 +319,4 @@ describe('Collection+Json Library', () => {
       done();
     });
   });
-
 });

@@ -20,6 +20,31 @@ export default class Entity
   }
 
   /**
+   * Get the data value by name
+   *
+   * @param {string} key the key value
+   * @return mixed
+   */
+  get(key)
+  {
+    return this.getDataByName(key).getValue();
+  }
+
+  /**
+   * Get the data value by name
+   *
+   * @param {string} key the key value
+   * @param {string} value the data value
+   * @return mixed
+   */
+  set(key, value)
+  {
+    this.getDataByName(key).setValue(value);
+
+    return this;
+  }
+
+  /**
    * Output the collection to string format
    *
    * @return string
