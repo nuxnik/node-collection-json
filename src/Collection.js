@@ -355,6 +355,27 @@ export default class Collection extends EntityLinker
   }
 
   /**
+   * Get Item by value
+   *
+   * @param String key The item key
+   * @param String value The item value to search for
+   */
+  getItemByKeyValue(key, value)
+  {
+    return this.items.filter(item => item[key].includes(value));
+  }
+
+  /**
+   * Get Item by array position index
+   *
+   * @param String index The item index
+   */
+  getItemByIndex(key)
+  {
+    return this.items[key];
+  }
+
+  /**
    * Get the first item
    *
    * @return Item

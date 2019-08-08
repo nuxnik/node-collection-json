@@ -127,7 +127,7 @@ export default class Client
   }
 
   /**
-   * Hop the API links recursively
+   * Hop the item API links recursively
    *
    * @param {String} path The rel path to follow
    * @param {Collection} collection The collection to crawl
@@ -145,11 +145,37 @@ export default class Client
           return this.hop(path, collection);
         });
       } else {
-        return collection.getLinkByRel(rel).follow().then( collection => {
-          return this.hop(modifiedPath, collection);
-        }).catch( errorCollection => {
-          return errorCollection;
-        });
+
+        let values = null;
+
+        // array of all items in the collection
+        if(values = rel.match(/(\w+)\[\]$/)) {
+          return collection;
+
+        // specific item by index
+        } else if (values = rel.match(/(\w+)\[([0-9]+)\]$/)) {
+          return collection.getItemByIndex(values[2]).getLinkByRel(values[1]).follow().then( collection => {
+            return this.hop(modifiedPath, collection);
+          }).catch( errorCollection => {
+            return errorCollection;
+          });
+
+        // specific item by key value
+        } else if (values = rel.match(/(\w+)\(([\w]+),\s*([\w]+)\)$/)) {
+          return collection.getItemByKeyValue(values[2], values[3]).getLinkByRel(values[1]).follow().then( collection => {
+            return this.hop(modifiedPath, collection);
+          }).catch( errorCollection => {
+            return errorCollection;
+          });
+        } else {
+
+          // root link
+          return collection.getLinkByRel(rel).follow().then( collection => {
+            return this.hop(modifiedPath, collection);
+          }).catch( errorCollection => {
+            return errorCollection;
+          });
+        }
       }
     }
     return collection;
