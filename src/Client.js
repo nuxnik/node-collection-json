@@ -1,4 +1,5 @@
 import Collection from './Collection';
+import Item from './Item';
 import Cache from './Cache';
 import Library from './Library';
 import axios from 'axios';
@@ -26,7 +27,7 @@ export default class Client
    * @return string
    */
   static get DELIMITER() {
-    return ".";
+    return "|";
   }
 
   /**
@@ -59,7 +60,7 @@ export default class Client
 
     // caching
     if (cache == null) {
-      this.cache = new Cache();
+      this.cache = new Cache(100);
     } else {
       this.cache = cache;
     }
@@ -93,7 +94,7 @@ export default class Client
 
       // get from cache?
       if(this.cache.isResourceCached(resource)){
-          return this.cache.getCollectionByResource(resource);
+        return this.cache.getCollectionByResource(resource);
       } else {
         axios.get(resource, mergedConfig).then( (response) => {
           let collection = Collection.getByObject(response.data, mergedConfig);
@@ -118,7 +119,7 @@ export default class Client
   getCollection()
   {
     if (this.collection === null) {
-      return this.getCollectionByResource(this.resource);
+      return this.getCollectionByResource(this.resource)
     } else {
       return new Promise( (resolve, reject) => {
         resolve(this.collection);
@@ -142,6 +143,7 @@ export default class Client
 
       if (collection == null) {
         return this.getCollection().then(collection => {
+          this.cache.addCollection(collection);
           return this.hop(path, collection);
         });
       } else {
@@ -150,27 +152,48 @@ export default class Client
 
         // array of all items in the collection
         if(values = rel.match(/(\w+)\[\]$/)) {
-          return collection;
 
-        // specific item by index
+          let resource = collection.getLinkByRel(values[1]).getHref();
+          return this.getCollectionByResource(resource).then(collection => {
+            return this.hop(modifiedPath, collection);
+          }).catch( errorCollection => {
+            return errorCollection;
+          });
+
+        // get item link and specific item by key value
+        } else if (values = rel.match(/(\w+)\(\s*(?:\"|\')?([\w]+)(?:\"|\')?\s*,\s*(?:\"|\')?([\w]+)(?:\"|\')?\s*\)$/)) {
+
+          let resource = collection.getLinkByRel(values[1]).getHref();
+          return this.getCollectionByResource(resource).then(collection => {
+            return this.hop(modifiedPath, collection.getItemByKeyAndValue(values[2], values[3]));
+          }).catch( errorCollection => {
+            return errorCollection;
+          });
+
+        // get item link and specific item by index
         } else if (values = rel.match(/(\w+)\[([0-9]+)\]$/)) {
-          return collection.getItemByIndex(values[2]).getLinkByRel(values[1]).follow().then( collection => {
-            return this.hop(modifiedPath, collection);
+
+          let resource = collection.getLinkByRel(values[1]).getHref();
+          return this.getCollectionByResource(resource).then(collection => {
+            return this.hop(modifiedPath, collection.getItemByIndex(values[2]));
           }).catch( errorCollection => {
             return errorCollection;
           });
 
-        // specific item by key value
-        } else if (values = rel.match(/(\w+)\(([\w]+),\s*([\w]+)\)$/)) {
-          return collection.getItemByKeyValue(values[2], values[3]).getLinkByRel(values[1]).follow().then( collection => {
-            return this.hop(modifiedPath, collection);
+        // get root link and specific item by index
+        } else if (values = rel.match(/(\w+){([0-9]+)}$/)) {
+
+          let resource = collection.getLinkByRel(values[1]).getHref();
+          return this.getCollectionByResource(resource).then(collection => {
+            return this.hop(modifiedPath, collection.getItemByIndex(values[2]));
           }).catch( errorCollection => {
             return errorCollection;
           });
+
         } else {
 
-          // root link
-          return collection.getLinkByRel(rel).follow().then( collection => {
+          let resource = collection.getLinkByRel(rel).getHref();
+          collection = this.getCollectionByResource(resource).then(collection => {
             return this.hop(modifiedPath, collection);
           }).catch( errorCollection => {
             return errorCollection;

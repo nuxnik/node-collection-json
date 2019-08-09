@@ -360,9 +360,13 @@ export default class Collection extends EntityLinker
    * @param String key The item key
    * @param String value The item value to search for
    */
-  getItemByKeyValue(key, value)
+  getItemByKeyAndValue(key, value)
   {
-    return this.items.filter(item => item[key].includes(value));
+    for (let item in this.items) {
+      if (this.items[item].getDataValueByName(key) == value) {
+        return this.items[item];
+      }
+    }
   }
 
   /**
