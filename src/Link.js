@@ -178,7 +178,7 @@ export default class Link extends Entity
 
     return new Promise( (resolve, reject) => {
       let url = this.getHref();
-      if (params !== null && params.constructor === Array) {
+      if (params !== null) {
         url += '?';
         for(let key in params) {
             url += '&' + key + '=' + params[key];
