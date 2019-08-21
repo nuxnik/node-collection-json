@@ -20,9 +20,10 @@ export default class Item extends EntityLinker
    *
    * @param {Object} json The JSON object
    * @param {Object} config The axios configuration object. See axios documentation for more options
+   * @param {Object} cache The caching object
    * @return item
    */
-  static getByObject(json, config = {})
+  static getByObject(json, config = {}, cache = null)
   {
     //check the href
     let hrefString = Item.getObjectValueByKey(json, "href");
@@ -31,7 +32,7 @@ export default class Item extends EntityLinker
     }
 
     // init the Item object
-    let item = new Item(hrefString, config);
+    let item = new Item(hrefString, config, cache);
 
     // check the datas object
     let datasObject = Item.getObjectValueByKey(json, "data");
@@ -55,7 +56,7 @@ export default class Item extends EntityLinker
 
         // add the link
         try {
-          let link = Link.getByObject(linkObject, config);
+          let link = Link.getByObject(linkObject, config, cache);
           item.addLink(link);
         } catch(error) {
           // skip this link
@@ -71,8 +72,9 @@ export default class Item extends EntityLinker
    *
    * @param string href The href uri
    * @param {Object} config The axios configuration object. See axios documentation for more options
+   * @param {Object} cache The caching object
    */
-  constructor(href, config = {})
+  constructor(href, config = {}, cache = null)
   {
     super();
     this.setHref(href);
@@ -102,6 +104,13 @@ export default class Item extends EntityLinker
      * @var array
      */
     this.links = [];
+
+    /**
+     * The cache object
+     *
+     * @var array
+     */
+    this.cache = cache;
   }
 
   /**
@@ -312,11 +321,56 @@ export default class Item extends EntityLinker
             url += '&' + key + '=' + params[key];
         }
       }
-      axios.get(url, mergedConfig).then( (response) => {
-        return resolve(Collection.getByObject(response.data, this.config));
-      }).catch( error => {
-        return reject(Collection.getByObject(error.response.data, this.config));
-      });
+      if(this.cache !== null && this.cache.isResourceCached(url)){
+        return this.cache.getCollectionByResource(url);
+      } else {
+        axios.get(url, mergedConfig).then( (response) => {
+          let collection = Collection.getByObject(response.data, this.config, this.cache);
+          return resolve(collection);
+        }).catch( error => {
+          let collection = Collection.getByObject(error.response.data, this.config, this.cache);
+          return resolve(collection);
+        });
+      }
     });
+  }
+
+  /**
+   * follow and hydrate the links with data
+   *
+   * @param {array} rels The array of rels
+   * @return Collection
+   */
+  hydrateLinks(rels = [])
+  {
+    let links = this.getLinks();
+    let promiseArray = [];
+    for (const link of links) {
+      if (rels.includes(link.getRel())) {
+        promiseArray.push(new Promise((resolve, reject) => {
+          link.follow().then(collection => {
+            this.addData(new Data(link.getRel(), collection, link.getRel()));
+            resolve(true);
+          });
+        }));
+      }
+    }
+    return Promise.all(promiseArray).then(() => {
+      return this;
+    });
+  }
+
+  /**
+   * Add collection to cache
+   *
+   * @param Collection collection The collection to cache
+   * @return Item
+   */
+  addCache(collection)
+  {
+    if (this.cache !== null) {
+      this.cache.addCollection(collection);
+    }
+    return this;
   }
 }

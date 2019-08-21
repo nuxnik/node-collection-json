@@ -19,9 +19,10 @@ export default class Link extends Entity
    * @todo - finish this
    * @param {Object} json The JSON object
    * @param {Object} config The axios configuration object. See axios documentation for more options
+   * @param {Object} cache The caching object
    * @return Link
    */
-  static getByObject(json, config = {})
+  static getByObject(json, config = {}, cache = null)
   {
     //check the href
     let hrefString = Link.getObjectValueByKey(json, "href");
@@ -38,7 +39,7 @@ export default class Link extends Entity
     //check the render
     let renderString = Link.getObjectValueByKey(json, "render");
 
-    let link = new Link(hrefString, relString, renderString, config);
+    let link = new Link(hrefString, relString, renderString, config, cache);
 
     //check the prompt
     let promptString = Link.getObjectValueByKey(json, "prompt");
@@ -56,8 +57,9 @@ export default class Link extends Entity
    * @param string rel The relational element
    * @param string render The render type
    * @param {Object} config The axios configuration object. See axios documentation for more options
+   * @param {Object} cache The caching object
    */
-  constructor(href, rel, render = null, config = {})
+  constructor(href, rel, render = null, config = {}, cache = null)
   {
     super();
 
@@ -65,6 +67,13 @@ export default class Link extends Entity
      * The global axios client configuration object
      */
     this.config = config;
+
+    /**
+     * The cache object
+     *
+     * @var array
+     */
+    this.cache = cache;
 
     this.setHref(href);
     this.setRel(rel);
@@ -184,11 +193,18 @@ export default class Link extends Entity
             url += '&' + key + '=' + params[key];
         }
       }
-      axios.get(url, mergedConfig).then( (response) => {
-        return resolve(Collection.getByObject(response.data, this.config));
-      }).catch( error => {
-        return reject(Collection.getByObject(error.response.data, this.config));
-      });
+      // get from cache?
+      if(this.cache !== null && this.cache.isResourceCached(url)){
+        return this.cache.getCollectionByResource(url);
+      } else {
+        axios.get(url, mergedConfig).then( (response) => {
+          let collection = Collection.getByObject(response.data, this.config, this.cache);
+          return resolve(collection);
+        }).catch( error => {
+          let collection = Collection.getByObject(error.response.data, this.config, this.cache);
+          return resolve(collection);
+        });
+      }
     });
   }
 
@@ -214,5 +230,19 @@ export default class Link extends Entity
     }
 
     return link;
+  }
+
+  /**
+   * Add collection to cache
+   *
+   * @param Collection collection The collection to cache
+   * @return Link
+   */
+  addCache(collection)
+  {
+    if (this.cache !== null) {
+      this.cache.addCollection(collection);
+    }
+    return this;
   }
 }

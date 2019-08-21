@@ -18,9 +18,10 @@ export default class Query extends Entity
    *
    * @param {Object} json The JSON object
    * @param {Object} config The axios configuration object. See axios documentation for more options
+   * @param {Object} cache The caching object
    * @return query
    */
-  static getByObject(json, config = {})
+  static getByObject(json, config = {}, cache = null)
   {
     //check the href
     let hrefString = Query.getObjectValueByKey(json, "href");
@@ -38,7 +39,7 @@ export default class Query extends Entity
     let promptString = Query.getObjectValueByKey(json, "prompt");
 
     // init the object
-    let query = new Query(hrefString, relString, promptString, config);
+    let query = new Query(hrefString, relString, promptString, config, cache);
 
     // check the data object
     let datasObject = Query.getObjectValueByKey(json, "data");
@@ -60,8 +61,12 @@ export default class Query extends Entity
   /**
    * The class constructor
    *
+   * @param string href The link uri
+   * @param string rel The relational element
+   * @param string prompt The prompt string
+   * @param {Object} cache The caching object
    */
-  constructor(href, rel, prompt = null, config = {})
+  constructor(href, rel, prompt = null, config = {}, cache = null)
   {
     super();
 
@@ -80,6 +85,13 @@ export default class Query extends Entity
      * @var array
      */
     this.data = [];
+
+    /**
+     * The cache object
+     *
+     * @var array
+     */
+    this.cache = cache;
   }
 
   /**
@@ -216,13 +228,21 @@ export default class Query extends Entity
     for (const data of this.getData()) {
       href = href + data.getName() + '=' + data.getValue() + '&';
     }
-    return new Promise( (resolve, reject) => {
-      axios.get(href, mergedConfig).then( (response) => {
-        return resolve(Collection.getByObject(response.data, this.config));
-      }).catch( error => {
-        return resolve(Collection.getByObject(error.response.data, this.config));
+
+    // get from cache?
+    if(this.cache !== null && this.cache.isResourceCached(href)){
+      return this.cache.getCollectionByResource(href);
+    } else {
+      return new Promise( (resolve, reject) => {
+        axios.get(href, mergedConfig).then( (response) => {
+          let collection = Collection.getByObject(response.data, this.config, this.cache);
+          return resolve(collection);
+        }).catch( error => {
+          let collection = Collection.getByObject(error.response.data, this.config, this.cache);
+          return resolve(collection);
+        });
       });
-    });
+    }
   }
 
 
@@ -253,5 +273,19 @@ export default class Query extends Entity
     }
 
     return query;
+  }
+
+  /**
+   * Add collection to cache
+   *
+   * @param Collection collection The collection to cache
+   * @return Query
+   */
+  addCache(collection)
+  {
+    if (this.cache !== null) {
+      this.cache.addCollection(collection);
+    }
+    return this;
   }
 }

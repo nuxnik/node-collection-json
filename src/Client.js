@@ -60,7 +60,7 @@ export default class Client
 
     // caching
     if (cache == null) {
-      this.cache = new Cache(100);
+      this.cache = new Cache(60*2);
     } else {
       this.cache = cache;
     }
@@ -94,17 +94,13 @@ export default class Client
 
       // get from cache?
       if(this.cache.isResourceCached(resource)){
-        return this.cache.getCollectionByResource(resource);
+        return resolve(this.cache.getCollectionByResource(resource));
       } else {
         axios.get(resource, mergedConfig).then( (response) => {
-          let collection = Collection.getByObject(response.data, mergedConfig);
-          this.cache.addCollection(collection);
-
+          let collection = Collection.getByObject(response.data, mergedConfig, this.cache);
           return resolve(collection);
         }).catch( error => {
-          let collection = Collection.getByObject(error.response.data, mergedConfig);
-          this.cache.addCollection(collection);
-
+          let collection = Collection.getByObject(error.response.data, mergedConfig, this.cache);
           return reject(collection);
         });
       }

@@ -56,6 +56,7 @@ export default class Cache
   {
     this.setTimeToLive( ttl );
     this.reset();
+    this.cache = {};
   }
 
   /**
@@ -151,7 +152,6 @@ export default class Cache
   getCollectionByResource( resource )
   {
     if ( resource in this.cache ){
-      console.log(resource);
       return this.cache[resource][Cache.KEY_COLLECTION];
     }
 
@@ -198,17 +198,15 @@ export default class Cache
    */
   isResourceCached(resource)
   {
-    if ( this.cache[resource] !== undefined ){
+    if ( resource in this.cache ){
       if ( this.cache[resource][Cache.KEY_TTL] > new Date() ) {
         this.cache[resource][Cache.KEY_ACCESSED]++;
         return true;
       } else {
-
-        this.clean();
+        this.cleanByResource(resource);
         return false;
       }
     } else {
-
       return false;
     }
   }

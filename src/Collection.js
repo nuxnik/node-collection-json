@@ -111,9 +111,10 @@ export default class Collection extends EntityLinker
    *
    * @param {String} collection - The string to import
    * @param {Object} config The axios configuration object. See axios documentation for more options
+   * @param {Object} cache The caching object
    * @return Collection
    */
-  static getByObject(json, config = {})
+  static getByObject(json, config = {}, cache = null )
   {
     //check the collection object
     let collectionObject = Collection.getObjectValueByKey(json, Collection.COLLECTION);
@@ -134,7 +135,7 @@ export default class Collection extends EntityLinker
     }
 
     // create the collection object
-    let collection = new Collection(hrefString, config);
+    let collection = new Collection(hrefString, config, cache);
 
     // check the links object
     let linksObject = Collection.getObjectValueByKey(collectionObject, Collection.LINKS);
@@ -143,7 +144,7 @@ export default class Collection extends EntityLinker
 
         // add the link
         try {
-          let link = Link.getByObject(linkObject, config);
+          let link = Link.getByObject(linkObject, config, cache);
           collection.addLink(link);
         } catch(error) {
           // skip this link
@@ -158,7 +159,7 @@ export default class Collection extends EntityLinker
 
         // add the item
         try {
-          let item = Item.getByObject(itemObject, config);
+          let item = Item.getByObject(itemObject, config, cache);
           collection.addItem(item);
         } catch(error) {
           // skip this item
@@ -173,7 +174,7 @@ export default class Collection extends EntityLinker
 
         // add the query
         try {
-          let query = Query.getByObject(queryObject, config);
+          let query = Query.getByObject(queryObject, config, cache);
           collection.addQuery(query);
         } catch(error) {
           console.log(error.message);
@@ -207,6 +208,11 @@ export default class Collection extends EntityLinker
         }
     }
 
+    // cache collection
+    if (cache !== null) {
+      cache.addCollection(collection);
+    }
+
     return collection;
   }
 
@@ -215,8 +221,9 @@ export default class Collection extends EntityLinker
    *
    * @param {String} url The api root uri
    * @param {Object} config The axios configuration object. See axios documentation for more options
+   * @param {Object} cache The caching object
    */
-  constructor(uri, config = {}) 
+  constructor(uri, config = {}, cache = null) 
   {
     super();
 
@@ -273,6 +280,13 @@ export default class Collection extends EntityLinker
      * @var object
      */
     this.error = {};
+
+    /**
+     * The cache object
+     *
+     * @var array
+     */
+    this.cache = cache;
   }
 
   /**
@@ -651,9 +665,9 @@ export default class Collection extends EntityLinker
       case 'post':
         return new Promise( (resolve, reject) => {
           axios(config).then( (response) => {
-            return resolve(Collection.getByObject(response.data, this.config));
+            return resolve(Collection.getByObject(response.data, this.config, cache));
           }).catch ( error => {
-            return reject(Collection.getByObject(error.response.data, this.config));
+            return reject(Collection.getByObject(error.response.data, this.config, cache));
           });
         });
         break;
