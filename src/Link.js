@@ -185,27 +185,26 @@ export default class Link extends Entity
     // get the config values
     let mergedConfig = Library.mergeConfigurationValues(this.config, config);
 
-    return new Promise( (resolve, reject) => {
-      let url = this.getHref();
-      if (params !== null) {
-        url += '?';
-        for(let key in params) {
-            url += '&' + key + '=' + params[key];
-        }
+    let url = this.getHref();
+    if (params !== null) {
+      url += '?';
+      for(let key in params) {
+        url += '&' + key + '=' + params[key];
       }
-      // get from cache?
-      if(this.cache !== null && this.cache.isResourceCached(url)){
-        return this.cache.getCollectionByResource(url);
-      } else {
-        axios.get(url, mergedConfig).then( (response) => {
-          let collection = Collection.getByObject(response.data, this.config, this.cache);
-          return resolve(collection);
-        }).catch( error => {
-          let collection = Collection.getByObject(error.response.data, this.config, this.cache);
-          return resolve(collection);
-        });
-      }
-    });
+    }
+    if (this.cache !== null && this.cache.isResourceCached(url)) {
+      return Promise.resolve(this.cache.getCollectionByResource(resource));
+    } else {
+      return axios.get(url, mergedConfig).then( (response) => {
+        response.data.collection.href = url;
+        let collection = Collection.getByObject(response.data, mergedConfig, this.cache);
+        this.cache.addCollection(collection);
+        return collection;
+      }).catch( error => {
+        let collection = Collection.getByObject(error.response.data, this.config, this.cache);
+        return collection;
+      });
+    }
   }
 
   /**

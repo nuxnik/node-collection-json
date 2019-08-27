@@ -313,26 +313,28 @@ export default class Item extends EntityLinker
     // get the config values
     let mergedConfig = Library.mergeConfigurationValues(this.config, config);
 
-    return new Promise( (resolve, reject) => {
-      let url = this.getHref();
-      if (params !== null && params.constructor === Array) {
-        url += '?';
-        for(let key in params) {
-            url += '&' + key + '=' + params[key];
-        }
+    // todo update the url parser
+    let url = this.getHref();
+    if (params !== null && params.constructor === Array) {
+      url += '?';
+      for(let key in params) {
+        url += '&' + key + '=' + params[key];
       }
-      if(this.cache !== null && this.cache.isResourceCached(url)){
-        return this.cache.getCollectionByResource(url);
-      } else {
-        axios.get(url, mergedConfig).then( (response) => {
-          let collection = Collection.getByObject(response.data, this.config, this.cache);
-          return resolve(collection);
-        }).catch( error => {
-          let collection = Collection.getByObject(error.response.data, this.config, this.cache);
-          return resolve(collection);
-        });
-      }
-    });
+    }
+
+    if (this.cache !== null && this.cache.isResourceCached(url)) {
+      return Promise.resolve(this.cache.getCollectionByResource(url));
+    } else {
+      return axios.get(url, mergedConfig).then( (response) => {
+        response.data.collection.href = url;
+        let collection = Collection.getByObject(response.data, mergedConfig, this.cache);
+        this.cache.addCollection(collection);
+        return collection;
+      }).catch( error => {
+        let collection = Collection.getByObject(error.response.data, this.config, this.cache);
+        return Promise.resolve(collection);
+      });
+    }
   }
 
   /**
@@ -342,35 +344,35 @@ export default class Item extends EntityLinker
    * @return Collection
    */
   hydrateLinks(rels = [])
-  {
-    let links = this.getLinks();
-    let promiseArray = [];
-    for (const link of links) {
-      if (rels.includes(link.getRel())) {
-        promiseArray.push(new Promise((resolve, reject) => {
-          link.follow().then(collection => {
-            this.addData(new Data(link.getRel(), collection, link.getRel()));
-            resolve(true);
-          });
-        }));
+    {
+      let links = this.getLinks();
+      let promiseArray = [];
+      for (const link of links) {
+        if (rels.includes(link.getRel())) {
+          promiseArray.push(new Promise((resolve, reject) => {
+            link.follow().then(collection => {
+              this.addData(new Data(link.getRel(), collection, link.getRel()));
+              resolve(true);
+            });
+          }));
+        }
       }
+      return Promise.all(promiseArray).then(() => {
+        return this;
+      });
     }
-    return Promise.all(promiseArray).then(() => {
-      return this;
-    });
-  }
 
-  /**
-   * Add collection to cache
-   *
-   * @param Collection collection The collection to cache
-   * @return Item
-   */
-  addCache(collection)
-  {
-    if (this.cache !== null) {
-      this.cache.addCollection(collection);
+    /**
+     * Add collection to cache
+     *
+     * @param Collection collection The collection to cache
+     * @return Item
+     */
+    addCache(collection)
+    {
+      if (this.cache !== null) {
+        this.cache.addCollection(collection);
+      }
+      return this;
     }
-    return this;
-  }
 }

@@ -229,18 +229,17 @@ export default class Query extends Entity
       href = href + data.getName() + '=' + data.getValue() + '&';
     }
 
-    // get from cache?
-    if(this.cache !== null && this.cache.isResourceCached(href)){
-      return this.cache.getCollectionByResource(href);
+    if (this.cache !== null && this.cache.isResourceCached(href)) {
+      return Promise.resolve(this.cache.getCollectionByResource(hrel));
     } else {
-      return new Promise( (resolve, reject) => {
-        axios.get(href, mergedConfig).then( (response) => {
-          let collection = Collection.getByObject(response.data, this.config, this.cache);
-          return resolve(collection);
-        }).catch( error => {
-          let collection = Collection.getByObject(error.response.data, this.config, this.cache);
-          return resolve(collection);
-        });
+      return axios.get(href, mergedConfig).then( (response) => {
+        response.data.collection.href = href;
+        let collection = Collection.getByObject(response.data, mergedConfig, this.cache);
+        this.cache.addCollection(collection);
+        return collection;
+      }).catch( error => {
+        let collection = Collection.getByObject(error.response.data, this.config, this.cache);
+        return collection;
       });
     }
   }

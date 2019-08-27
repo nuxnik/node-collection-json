@@ -151,7 +151,8 @@ export default class Cache
    */
   getCollectionByResource( resource )
   {
-    if ( resource in this.cache ){
+    if ( this.cache[resource] != undefined ){
+      this.cache[resource][Cache.KEY_ACCESSED]++;
       return this.cache[resource][Cache.KEY_COLLECTION];
     }
 
@@ -198,9 +199,8 @@ export default class Cache
    */
   isResourceCached(resource)
   {
-    if ( resource in this.cache ){
+    if ( this.cache[resource] != undefined ){
       if ( this.cache[resource][Cache.KEY_TTL] > new Date() ) {
-        this.cache[resource][Cache.KEY_ACCESSED]++;
         return true;
       } else {
         this.cleanByResource(resource);
