@@ -37,3 +37,9 @@ export {default as CJQuery} from './Query';
 
 // The Template  container class
 export {default as CJTemplate } from './Template';
+
+// The the query builder object
+export {default as CJQueryBuilder } from './QueryBuilder';
+
+// The the API query object
+export {default as CJApiQuery } from './ApiQuery';
