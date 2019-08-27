@@ -5,6 +5,7 @@ import Data from '../src/Data';
 import Error from '../src/Error';
 import Item from '../src/Item';
 import Link from '../src/Link';
+import QueryBuilder from '../src/QueryBuilder';
 import Template from '../src/Template';
 import chai, { expect } from 'chai';
 
@@ -320,25 +321,6 @@ describe('Collection+Json Library', () => {
 
       expect(0).to.equal(client.getCache().getAccessedByResource(resource));
       done();
-    });
-
-    it('test hop function', (done) => {
-      let client = new Client("http://127.0.0.1:8000/api/v1", {}, Client.API, new Cache(10000));
-      /*
-      client.hop('brand{0}|products[0]|description("id","27")|language("name", "Espanol")|countries[]').then(function (collection) {
-        var item = collection.getItemByIndex(4);
-        console.log(item.get("name"));
-      }).catch( collection => {
-        console.log("Crawl ERROR", JSON.stringify(collection.getJson(), null, 2));
-      });
-      client.hop('brand{0}|products[0]|description("id","27")|language("name", "Espanol")|countries[]').then(function (collection) {
-        var item = collection.getItemByIndex(4);
-        console.log(item.get("name"));
-      }).catch( collection => {
-        console.log("Crawl ERROR", JSON.stringify(collection.getJson(), null, 2));
-      });
-      */
-     done()
     });
   });
 });
