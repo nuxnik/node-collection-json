@@ -40,6 +40,7 @@ export default class ApiQuery
     this.searchValue;
     this.node;
     this.type;
+    this.link;
   }
   /**
    * Add parameters to the query
@@ -197,6 +198,30 @@ export default class ApiQuery
   setType(type)
   {
     this.type = type;
+    return this;
+  }
+
+  /**
+   * Get Link
+   *
+   * @since Tue 27 Aug 2019 02:40:22 PM CEST
+   * @return string
+   */
+  getLink()
+  {
+    return this.link;
+  }
+  
+  /**
+   * Set Link
+   *
+   * @param {String} link The link to set
+   * @return QueryBuilder
+   */
+  setLink(link)
+  {
+    this.link = link;
+
     return this;
   }
 

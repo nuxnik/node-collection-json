@@ -92,6 +92,13 @@ export default class QueryBuilder
     return query;
   }
 
+  link(link)
+  {
+    let query = this.getQuery().setLink(link);
+    this.next();
+    return query;
+  }
+
   /**
    * Get the current query object. Alias of getQuery
    *

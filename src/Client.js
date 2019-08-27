@@ -127,13 +127,18 @@ export default class Client
       // get the current and next query increment the index
       let query = queryBuilder.current();
 
-      if (query !== undefined && query.getNode()) {
+      if (query !== undefined && (query.getNode() || query.getLink())) {
         if (collection == null) {
           return this.getCollection().then(collection => {
             return this.query(queryBuilder, collection);
           });
         } else {
-          let resource = collection.getLinkByRel(query.getNode()).getHref();
+          let resource = '';
+          if (query.getLink()) {
+            resource = query.getLink();
+          } else {
+            resource = collection.getLinkByRel(query.getNode()).getHref();
+          }
           if (resource) {
             if (resource.match(/\?/)) {
               resource += '&' + query.getParamsAsString();
