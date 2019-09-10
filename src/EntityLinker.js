@@ -33,5 +33,4 @@ export default class EntityLinker extends Entity
     // return empty link object
     return new Link(null, null);
   }
-
 }

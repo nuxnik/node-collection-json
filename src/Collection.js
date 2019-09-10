@@ -161,6 +161,28 @@ export default class Collection extends EntityLinker
         try {
           let item = Item.getByObject(itemObject, config, cache);
           collection.addItem(item);
+
+          if (cache !== null) {
+            // cache the item into seperate collection
+            let itemCollection = new Collection(item.getHref(), config, cache);
+
+            // check the links object
+            let linksObject = Collection.getObjectValueByKey(collectionObject, Collection.LINKS);
+            if (Library.isArray(linksObject)) {
+              for (const linkObject of linksObject) {
+
+                // add the link
+                try {
+                  let link = Link.getByObject(linkObject, config, cache);
+                  itemCollection.addLink(link);
+                } catch(error) {
+                  // skip this link
+                }
+              }
+            }
+            itemCollection.addItem(item);
+            cache.addCollection(itemCollection);
+          }
         } catch(error) {
           // skip this item
         }
@@ -186,26 +208,26 @@ export default class Collection extends EntityLinker
     let templateObject = Collection.getObjectValueByKey(collectionObject, Collection.TEMPLATE);
     if (templateObject !== undefined) {
 
-        // add the template
-        try {
-          let template = Template.getByObject(templateObject);
-          collection.setTemplate(template);
-        } catch(error) {
-          console.log(error.message);
-        }
+      // add the template
+      try {
+        let template = Template.getByObject(templateObject);
+        collection.setTemplate(template);
+      } catch(error) {
+        console.log(error.message);
+      }
     }
 
     //check the error object
     let errorObject = Collection.getObjectValueByKey(collectionObject, Collection.ERROR);
     if (errorObject !== undefined) {
 
-        // add the error
-        try {
-          let error = Error.getByObject(errorObject);
-          collection.setError(error);
-        } catch(error) {
-          console.log(error.message);
-        }
+      // add the error
+      try {
+        let error = Error.getByObject(errorObject);
+        collection.setError(error);
+      } catch(error) {
+        console.log(error.message);
+      }
     }
 
     // cache collection
@@ -224,456 +246,457 @@ export default class Collection extends EntityLinker
    * @param {Object} cache The caching object
    */
   constructor(uri, config = {}, cache = null) 
-  {
-    super();
+    {
+      super();
 
-    /**
-     * The axios configuration object.
-     */
-    this.config = config;
+      /**
+       * The axios configuration object.
+       */
+      this.config = config;
 
-    /**
-     * The default content type header
-     *
-     * @var string
-     */
-    this.contentType = Collection.CONTENT_TYPE;
+      /**
+       * The default content type header
+       *
+       * @var string
+       */
+      this.contentType = Collection.CONTENT_TYPE;
 
-    /**
-     * The api root uri
-     *
-     * @var string
-     */
-    this.href = uri;
+      /**
+       * The api root uri
+       *
+       * @var string
+       */
+      this.href = uri;
 
-    /**
-     * The api links array
-     *
-     * @var array
-     */
-    this.links = [];
+      /**
+       * The api links array
+       *
+       * @var array
+       */
+      this.links = [];
 
-    /**
-     * The items data array
-     *
-     * @var array
-     */
-    this.items = [];
+      /**
+       * The items data array
+       *
+       * @var array
+       */
+      this.items = [];
 
-    /**
-     * The query method data definition array
-     *
-     * @var array
-     */
-    this.queries = [];
+      /**
+       * The query method data definition array
+       *
+       * @var array
+       */
+      this.queries = [];
 
-    /**
-     * The data template definition
-     *
-     * @var object
-     */
-    this.template = {};
+      /**
+       * The data template definition
+       *
+       * @var object
+       */
+      this.template = {};
 
-    /**
-     * The error object
-     *
-     * @var object
-     */
-    this.error = {};
+      /**
+       * The error object
+       *
+       * @var object
+       */
+      this.error = {};
 
-    /**
-     * The cache object
-     *
-     * @var array
-     */
-    this.cache = cache;
-  }
-
-  /**
-   * Get the API uri definition
-   *
-   * @return string
-   */
-  getHref()
-  {
-    return this.href;
-  }
-
-  /**
-   * Get the colleciton version number
-   *
-   * @return String
-   */
-  getVersion()
-  {
-    return Collection.VERSION;
-  }
-
-  /**
-   * Add link object to the collection
-   *
-   * @param object link The link object
-   * @see Link
-   * @return Collection
-   */
-  addLink(link)
-  {
-    this.links.push(link);
-
-    return this;
-  }
-
-  /**
-   * Get array of link strings
-   *
-   * @return array
-   */
-  getLinks()
-  {
-    return this.links;
-  }
-
-  /**
-   * Add item object to the collection
-   *
-   * @param object item The item object
-   * @see Item
-   * @return Collection
-   */
-  addItem(item)
-  {
-    this.items.push(item);
-
-    return this;
-  }
-
-  /**
-   * Get an item instance
-   *
-   * @param String url - The item url
-   * @return Item
-   */
-  getItem(url)
-  {
-    return new Item(url);
-  }
-
-  /**
-   * Get array of item strings
-   *
-   * @return array
-   */
-  getItems()
-  {
-    return this.items;
-  }
-
-  /**
-   * Get Item by value
-   *
-   * @param String key The item key
-   * @param String value The item value to search for
-   */
-  getItemByKeyAndValue(key, value)
-  {
-    for (let item in this.items) {
-      if (this.items[item].getDataValueByName(key) == value) {
-        return this.items[item];
-      }
-    }
-  }
-
-  /**
-   * Get Item by array position index
-   *
-   * @param String index The item index
-   */
-  getItemByIndex(key)
-  {
-    return this.items[key];
-  }
-
-  /**
-   * Get the first item
-   *
-   * @return Item
-   */
-  getFirstItem()
-  {
-    let item = null;
-    if (typeof this.items[0] !== "undefined") {
-      item = this.items[0];
+      /**
+       * The cache object
+       *
+       * @var array
+       */
+      this.cache = cache;
     }
 
-    return item;
-  }
-
-  /**
-   * Add query object to the collection
-   *
-   * @param object query The query object
-   * @see Query
-   * @return Collection
-   */
-  addQuery(query)
-  {
-    this.queries.push(query);
-
-    return this;
-  }
-
-  /**
-   * Get an query instance
-   *
-   * @param String url - The item url
-   * @return Query
-   */
-  getQuery()
-  {
-    return new Query();
-  }
-
-  /**
-   * Get an query instance by rel
-   *
-   * @param String rel - The query rel
-   * @return Query
-   */
-  getQueryByRel(rel)
-  {
-    for (const query of this.getQueries()) {
-      if (query.getRel() == rel) {
-        return query;
-      }
+    /**
+     * Get the API uri definition
+     *
+     * @return string
+     */
+    getHref()
+    {
+      return this.href;
     }
-    return new Query(url);
-  }
 
-  /**
-   * Get array of query objects
-   *
-   * @return array
-   */
-  getQueries()
-  {
-    return this.queries;
-  }
+    /**
+     * Get the colleciton version number
+     *
+     * @return String
+     */
+    getVersion()
+    {
+      return Collection.VERSION;
+    }
 
-  /**
-   * Set the template object
-   *
-   * @param Template template The template object
-   * @see Template
-   * @return Collection
-   */
-  setTemplate(template)
-  {
-    this.template = template;
-  }
+    /**
+     * Add link object to the collection
+     *
+     * @param object link The link object
+     * @see Link
+     * @return Collection
+     */
+    addLink(link)
+    {
+      this.links.push(link);
 
-  /**
-   * Get the template object
-   *
-   * @return Template
-   */
-  getTemplate()
-  {
-    return this.template;
-  }
+      return this;
+    }
 
-  /**
-   * Set the error object
-   *
-   * @param Error error The error object
-   * @see error
-   * @return Collection
-   */
-  setError(error)
-  {
-    this.error = error;
-  }
+    /**
+     * Get array of link strings
+     *
+     * @return array
+     */
+    getLinks()
+    {
+      return this.links;
+    }
 
-  /**
-   * Get the error object
-   *
-   * @return error
-   */
-  getError()
-  {
-    return this.error;
-  }
+    /**
+     * Add item object to the collection
+     *
+     * @param object item The item object
+     * @see Item
+     * @return Collection
+     */
+    addItem(item)
+    {
+      this.items.push(item);
 
-  /**
-   * Get compiled json object
-   *
-   * @return Object
-   */
-  getJson()
-  {
-    // create the collection
-    let collection = {};
-    collection.version = Collection.VERSION;
-    collection.href = this.href;
+      return this;
+    }
 
-    // add the links
-    if (this.getLinks().length > 0) {
-      collection.links = [];
-      for(const link of this.getLinks()){
-        collection.links.push(link.getJson());
+    /**
+     * Get an item instance
+     *
+     * @param String url - The item url
+     * @return Item
+     */
+    getItem(url)
+    {
+      return new Item(url);
+    }
+
+    /**
+     * Get array of item strings
+     *
+     * @return array
+     */
+    getItems()
+    {
+      return this.items;
+    }
+
+    /**
+     * Get Item by value
+     *
+     * @param String key The item key
+     * @param String value The item value to search for
+     */
+    getItemByKeyAndValue(key, value)
+    {
+      for (let item in this.items) {
+        if (this.items[item].getDataValueByName(key) == value) {
+          return this.items[item];
+        }
       }
     }
 
-    // add the items
-    if (this.getItems().length > 0) {
-      collection.items = [];
-      for(const item of this.getItems()) {
-        collection.items.push(item.getJson());
-      }
+    /**
+     * Get Item by array position index
+     *
+     * @param String index The item index
+     */
+    getItemByIndex(key)
+    {
+      return this.items[key];
     }
 
-    // add the querys
-    if (this.getQueries().length > 0) {
-      collection.queries = [];
+    /**
+     * Get the first item
+     *
+     * @return Item
+     */
+    getFirstItem()
+    {
+      let item = null;
+      if (typeof this.items[0] !== "undefined") {
+        item = this.items[0];
+      }
+
+      return item;
+    }
+
+    /**
+     * Add query object to the collection
+     *
+     * @param object query The query object
+     * @see Query
+     * @return Collection
+     */
+    addQuery(query)
+    {
+      this.queries.push(query);
+
+      return this;
+    }
+
+    /**
+     * Get an query instance
+     *
+     * @param String url - The item url
+     * @return Query
+     */
+    getQuery()
+    {
+      return new Query();
+    }
+
+    /**
+     * Get an query instance by rel
+     *
+     * @param String rel - The query rel
+     * @return Query
+     */
+    getQueryByRel(rel)
+    {
       for (const query of this.getQueries()) {
-        collection.queries.push(query.getJson());
+        if (query.getRel() == rel) {
+          return query;
+        }
       }
+      return new Query(url);
     }
 
-    // add template
-    if(Object.keys(this.getTemplate()).length > 0 && this.getTemplate().getData().length > 0 ) {
-      collection.template = this.getTemplate().getJson();
+    /**
+     * Get array of query objects
+     *
+     * @return array
+     */
+    getQueries()
+    {
+      return this.queries;
     }
 
-    // add error
-    if (Object.keys(this.getError()).length > 0) {
-      collection.error = this.getError().getJson();
+    /**
+     * Set the template object
+     *
+     * @param Template template The template object
+     * @see Template
+     * @return Collection
+     */
+    setTemplate(template)
+    {
+      this.template = template;
     }
 
-    return {collection};
-  }
+    /**
+     * Get the template object
+     *
+     * @return Template
+     */
+    getTemplate()
+    {
+      return this.template;
+    }
 
-  /**
-   * Get item as a flattened vanilla JSON object
-   *
-   * @return Object
-   */
-  itemsAsJson()
-  {
-    let json = [];
+    /**
+     * Set the error object
+     *
+     * @param Error error The error object
+     * @see error
+     * @return Collection
+     */
+    setError(error)
+    {
+      this.error = error;
+    }
 
-    // flatten the data into an object
-    if (this.getItems().length > 0) {
-      for (const item of this.getItems()) {
-        json.push(item.asJson());
+    /**
+     * Get the error object
+     *
+     * @return error
+     */
+    getError()
+    {
+      return this.error;
+    }
+
+    /**
+     * Get compiled json object
+     *
+     * @return Object
+     */
+    getJson()
+    {
+      // create the collection
+      let collection = {};
+      collection.version = Collection.VERSION;
+      collection.href = this.href;
+
+      // add the links
+      if (this.getLinks().length > 0) {
+        collection.links = [];
+        for(const link of this.getLinks()){
+          collection.links.push(link.getJson());
+        }
       }
-    }
 
-    return json;
-  }
-
-
-  /**
-   * Get ContentType
-   *
-   * @return String
-   */
-  getContentType()
-  {
-    return this.contentType;
-  }
-
-  /**
-   * Set ContentType
-   *
-   * @param {contentType} The contentType header value to set
-   * @return Collection
-   */
-  setContentType(contentType)
-  {
-    this.contentType = contentType;
-
-    return this;
-  }
-
-  /**
-   * Post template contents to the server
-   *
-   * @return Promise
-   */
-  post(config = {})
-  {
-    return this.dispatch('post', null, config);
-  }
-
-  /**
-   * Put template contents to the server
-   *
-   * @return Promise
-   */
-  put(resource, config = {})
-  {
-    return this.dispatch('put', resource, config);
-  }
-
-  /**
-   * Send template contents to the server and get new collection
-   *
-   * @param {String} method The HTTP method
-   * @param {String} resource The resource URL string
-   * @param {Object} config The axios configuration object. See axios documentation for options
-   * @return Promise
-   */
-  dispatch(method, resource = null, config = {})
-  {
-    if(Object.keys(config).length === 0 && config.constructor === Object) {
-      config = this.config;
-    }
-
-    // set the method
-    config.method = method;
-
-    // set the resource
-    let url = this.getHref();
-    if (resource !== null) {
-      url = resource;
-    }
-    config.url = url;
-
-    // add the content type header
-    if (config.headers === undefined) {
-      config.headers = {};
-    }
-
-    // set the content type header
-    if (config.headers["Content-Type"] === undefined) {
-      config.headers["Content-Type"] = this.contentType;
-    }
-
-    // create the template payload
-    let templateData = {};
-    if( typeof config.data != "undefined") {
-      for(const key in config.data) {
-        this.getTemplate().setData(key, config.data[key]);
+      // add the items
+      if (this.getItems().length > 0) {
+        collection.items = [];
+        for(const item of this.getItems()) {
+          collection.items.push(item.getJson());
+        }
       }
-    }
-    templateData.template = this.getTemplate().getJson();
-    config.data = JSON.stringify(templateData);
 
-    // dispatch
-    switch (method) {
-      case 'put':
-      case 'post':
-        return new Promise( (resolve, reject) => {
-          axios(config).then( (response) => {
-            return resolve(Collection.getByObject(response.data, this.config, cache));
-          }).catch ( error => {
-            return reject(Collection.getByObject(error.response.data, this.config, cache));
+      // add the querys
+      if (this.getQueries().length > 0) {
+        collection.queries = [];
+        for (const query of this.getQueries()) {
+          collection.queries.push(query.getJson());
+        }
+      }
+
+      // add template
+      if(Object.keys(this.getTemplate()).length > 0 && this.getTemplate().getData().length > 0 ) {
+        collection.template = this.getTemplate().getJson();
+      }
+
+      // add error
+      if (Object.keys(this.getError()).length > 0) {
+        collection.error = this.getError().getJson();
+      }
+
+      return {collection};
+    }
+
+    /**
+     * Get item as a flattened vanilla JSON object
+     *
+     * @return Object
+     */
+    itemsAsJson()
+    {
+      let json = [];
+
+      // flatten the data into an object
+      if (this.getItems().length > 0) {
+        for (const item of this.getItems()) {
+          json.push(item.asJson());
+        }
+      }
+
+      return json;
+    }
+
+
+    /**
+     * Get ContentType
+     *
+     * @return String
+     */
+    getContentType()
+    {
+      return this.contentType;
+    }
+
+    /**
+     * Set ContentType
+     *
+     * @param {contentType} The contentType header value to set
+     * @return Collection
+     */
+    setContentType(contentType)
+    {
+      this.contentType = contentType;
+
+      return this;
+    }
+
+    /**
+     * Post template contents to the server
+     *
+     * @return Promise
+     */
+    post(config = {})
+    {
+      return this.dispatch('post', null, config);
+    }
+
+    /**
+     * Put template contents to the server
+     *
+     * @return Promise
+     */
+    put(resource, config = {})
+    {
+      return this.dispatch('put', resource, config);
+    }
+
+    /**
+     * Send template contents to the server and get new collection
+     *
+     * @param {String} method The HTTP method
+     * @param {String} resource The resource URL string
+     * @param {Object} config The axios configuration object. See axios documentation for options
+     * @return Promise
+     */
+    dispatch(method, resource = null, config = {})
+    {
+      if(Object.keys(config).length === 0 && config.constructor === Object) {
+        config = this.config;
+      }
+
+      // set the method
+      config.method = method;
+
+      // set the resource
+      let url = this.getHref();
+      if (resource !== null) {
+        url = resource;
+      }
+      config.url = url;
+
+      // add the content type header
+      if (config.headers === undefined) {
+        config.headers = {};
+      }
+
+      // set the content type header
+      if (config.headers["Content-Type"] === undefined) {
+        config.headers["Content-Type"] = this.contentType;
+      }
+
+      // create the template payload
+      let templateData = {};
+      if( typeof config.data != "undefined") {
+        for(const key in config.data) {
+          this.getTemplate().setData(key, config.data[key]);
+        }
+      }
+      templateData.template = this.getTemplate().getJson();
+      config.data = JSON.stringify(templateData);
+
+      // dispatch
+      switch (method) {
+        case 'put':
+        case 'post':
+          return new Promise( (resolve, reject) => {
+            axios(config).then( (response) => {
+              return resolve(Collection.getByObject(response.data, this.config, cache));
+            }).catch ( error => {
+              return reject(Collection.getByObject(error.response.data, this.config, cache));
+            });
           });
-        });
         break;
-      // case 'patch':
-      default:
-        throw new Error("Method type: " + method + " not found");
+        // case 'patch':
+        default:
+          throw new Error("Method type: " + method + " not found");
+        break;
     }
   }
 }

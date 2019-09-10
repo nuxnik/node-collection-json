@@ -41,6 +41,7 @@ export default class ApiQuery
     this.node;
     this.type;
     this.link;
+    this.hrefExtension = '';
   }
   /**
    * Add parameters to the query
@@ -211,7 +212,7 @@ export default class ApiQuery
   {
     return this.link;
   }
-  
+
   /**
    * Set Link
    *
@@ -243,5 +244,28 @@ export default class ApiQuery
   isItem()
   {
     return this.type == ApiQuery.ITEM ? true : false;
+  }
+
+  /**
+   * Extend the endpoint
+   *
+   * @param {String} ext The url extension
+   * @return QueryBuilder
+   */
+  addHrefExtension(ext)
+  {
+    this.hrefExtension += ext;
+
+    return this;
+  }
+
+  /**
+   * Set the href extension string
+   *
+   * @return string
+   */
+  getHrefExtension()
+  {
+    return this.hrefExtension;
   }
 }

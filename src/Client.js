@@ -139,7 +139,8 @@ export default class Client
           } else {
             resource = collection.getLinkByRel(query.getNode()).getHref();
           }
-          if (resource) {
+          if (typeof resource === 'string' && resource !== '') {
+            resource += query.getHrefExtension();
             if (resource.match(/\?/)) {
               resource += '&' + query.getParamsAsString();
             } else if(query.getParamsAsString()) {
