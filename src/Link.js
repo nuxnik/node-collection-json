@@ -1,4 +1,3 @@
-import Collection from './Collection';
 import CollectionError from './CollectionError';
 import Entity from './Entity';
 import Library from './Library';

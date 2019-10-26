@@ -198,6 +198,24 @@ describe('Collection+Json Library', () => {
     });
   });
 
+  describe('import item into template object', () => {
+    it('should create a valid template object', (done) => {
+      let collection = Collection.getByObject(JSON.parse(validCollection));
+      let item = collection.getFirstItem();
+      collection.getTemplate().importItem(item);
+
+      expect(collection.getTemplate().get('full-name')).to.equal("J. Doe");
+      expect(collection.getTemplate().get('email')).to.equal("jdoe@example.org");
+      let json = collection.getTemplate().asJson();
+      json["full-name"] = "Changed Name";
+
+      collection.getTemplate().importJson(json);
+      expect(collection.getTemplate().get('full-name')).to.equal("Changed Name");
+      expect(collection.getTemplate().get('email')).to.equal("jdoe@example.org");
+      done();
+    });
+  });
+
   describe('Create item object', () => {
     it('should create a valid item object', (done) => {
 

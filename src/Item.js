@@ -1,4 +1,3 @@
-import Collection from './Collection';
 import CollectionError from './CollectionError';
 import Data from './Data';
 import EntityLinker from './EntityLinker';
@@ -141,7 +140,7 @@ export default class Item extends EntityLinker
    *
    * @param object data The data object
    * @see Data
-   * @return Collection
+   * @return Item
    */
   addData(data)
   {
@@ -161,28 +160,11 @@ export default class Item extends EntityLinker
   }
 
   /**
-   * Get the data object by name
-   *
-   * @param {string} name The name of the key to find
-   * @return Data
-   */
-  getDataByName(name)
-  {
-    for(let data of this.data) {
-        if(data.getName() === name) {
-            return data;
-        }
-    }
-
-    return new Data(key);
-  }
-
-  /**
    * Add link object to the collection
    *
    * @param object link The link object
    * @see Link
-   * @return Collection
+   * @return Item
    */
   addLink(link)
   {
@@ -341,7 +323,7 @@ export default class Item extends EntityLinker
    * follow and hydrate the links with data
    *
    * @param {array} rels The array of rels
-   * @return Collection
+   * @return Item
    */
   hydrateLinks(rels = [])
     {

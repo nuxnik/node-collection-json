@@ -176,4 +176,25 @@ export default class Template extends Entity
 
     return this;
   }
+
+  /**
+   * Import a JSON object into the template
+   *
+   * @param {JSON} json the json object to import
+   * @return Template
+   */
+  importJson(json)
+  {
+    for (const templateData of this.getData()) {
+      for (const name in json) {
+        if (templateData.getName() === name) {
+          templateData.setName(name);
+          templateData.setValue(json[name]);
+          templateData.setPrompt(name);
+        }
+      }
+    }
+
+    return this;
+  }
 }

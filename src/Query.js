@@ -1,4 +1,3 @@
-import Collection from './Collection';
 import CollectionError from './CollectionError';
 import Data from './Data';
 import Entity from './Entity';
@@ -99,7 +98,7 @@ export default class Query extends Entity
    *
    * @param object data The data object
    * @see Data
-   * @return Collection
+   * @return Query
    */
   addData(data)
   {

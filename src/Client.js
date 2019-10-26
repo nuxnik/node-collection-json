@@ -1,6 +1,5 @@
-import Cache from './Cache';
-import Collection from './Collection';
 import Item from './Item';
+import Collection from './Collection';
 import Library from './Library';
 import QueryBuilder from './QueryBuilder';
 import axios from 'axios';
