@@ -687,9 +687,13 @@ export default class Collection extends EntityLinker
         case 'post':
           return new Promise( (resolve, reject) => {
             axios(config).then( (response) => {
-              return resolve(Collection.getByObject(response.data, this.config, cache));
+              let collection = (Collection.getByObject(response.data, this.config, this.cache));
+              this.cache.addCollection(collection);
+              return resolve(collection);
             }).catch ( error => {
-              return reject(Collection.getByObject(error.response.data, this.config, cache));
+              let collection = (Collection.getByObject(response.data, this.config, this.cache));
+              this.cache.addCollection(collection);
+              return reject(collection);
             });
           });
         break;

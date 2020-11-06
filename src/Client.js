@@ -58,6 +58,7 @@ export default class Client
     // The global axios client configuration object
     this.config = config;
 
+    // the cache object
     this.cache = cache;
 
     switch(type) {
@@ -173,108 +174,129 @@ export default class Client
    * @param {Collection} collection The collection to crawl
    * @return Promise
    */
-  hop(path, collection = null)
-    {
-      if (path !== '') {
-        let rels         = path.split(Client.DELIMITER);
-        let rel          = rels.shift();
-        let modifiedPath = rels.join(Client.DELIMITER);
+  hop(path, collection = null) {
+    if (path !== '') {
+      let rels         = path.split(Client.DELIMITER);
+      let rel          = rels.shift();
+      let modifiedPath = rels.join(Client.DELIMITER);
 
-        if (collection == null) {
-          return this.getCollection().then(collection => {
-            return this.hop(path, collection);
+      if (collection == null) {
+        return this.getCollection().then(collection => {
+          return this.hop(path, collection);
+        });
+      } else {
+
+        let values = null;
+
+        // array of all items in the collection
+        if(values = rel.match(/(\w+)\[\]$/)) {
+
+          let resource = collection.getLinkByRel(values[1]).getHref();
+          return this.getCollectionByResource(resource).then(collection => {
+            return this.hop(modifiedPath, collection);
+          }).catch( errorCollection => {
+            return errorCollection;
           });
+
+          // get item link and specific item by key value
+          } else if (values = rel.match(/(\w+)\(\s*(?:\"|\')?([\w]+)(?:\"|\')?\s*,\s*(?:\"|\')?([\w]+)(?:\"|\')?\s*\)$/)) {
+
+          let resource = collection.getLinkByRel(values[1]).getHref();
+          return this.getCollectionByResource(resource).then(collection => {
+            return this.hop(modifiedPath, collection.getItemByKeyAndValue(values[2], values[3]));
+          }).catch( errorCollection => {
+            return errorCollection;
+          });
+
+      // get item link and specific item by index
+      } else if (values = rel.match(/(\w+)\[([0-9]+)\]$/)) {
+
+        let resource = collection.getLinkByRel(values[1]).getHref();
+        return this.getCollectionByResource(resource).then(collection => {
+          return this.hop(modifiedPath, collection.getItemByIndex(values[2]));
+        }).catch( errorCollection => {
+          return errorCollection;
+        });
+
+        // get root link and specific item by index
+        } else if (values = rel.match(/(\w+){([0-9]+)}$/)) {
+
+          let resource = collection.getLinkByRel(values[1]).getHref();
+          return this.getCollectionByResource(resource).then(collection => {
+            return this.hop(modifiedPath, collection.getItemByIndex(values[2]));
+          }).catch( errorCollection => {
+            return errorCollection;
+          });
+
         } else {
 
-          let values = null;
-
-          // array of all items in the collection
-          if(values = rel.match(/(\w+)\[\]$/)) {
-
-            let resource = collection.getLinkByRel(values[1]).getHref();
-            return this.getCollectionByResource(resource).then(collection => {
-              return this.hop(modifiedPath, collection);
-            }).catch( errorCollection => {
-              return errorCollection;
-            });
-
-            // get item link and specific item by key value
-            } else if (values = rel.match(/(\w+)\(\s*(?:\"|\')?([\w]+)(?:\"|\')?\s*,\s*(?:\"|\')?([\w]+)(?:\"|\')?\s*\)$/)) {
-
-            let resource = collection.getLinkByRel(values[1]).getHref();
-            return this.getCollectionByResource(resource).then(collection => {
-              return this.hop(modifiedPath, collection.getItemByKeyAndValue(values[2], values[3]));
-            }).catch( errorCollection => {
-              return errorCollection;
-            });
-
-            // get item link and specific item by index
-            } else if (values = rel.match(/(\w+)\[([0-9]+)\]$/)) {
-
-              let resource = collection.getLinkByRel(values[1]).getHref();
-              return this.getCollectionByResource(resource).then(collection => {
-                return this.hop(modifiedPath, collection.getItemByIndex(values[2]));
-              }).catch( errorCollection => {
-                return errorCollection;
-              });
-
-              // get root link and specific item by index
-              } else if (values = rel.match(/(\w+){([0-9]+)}$/)) {
-
-                let resource = collection.getLinkByRel(values[1]).getHref();
-                return this.getCollectionByResource(resource).then(collection => {
-                  return this.hop(modifiedPath, collection.getItemByIndex(values[2]));
-                }).catch( errorCollection => {
-                  return errorCollection;
-                });
-
-              } else {
-
-                let resource = collection.getLinkByRel(rel).getHref();
-                collection = this.getCollectionByResource(resource).then(collection => {
-                  return this.hop(modifiedPath, collection);
-                }).catch( errorCollection => {
-                  return errorCollection;
-                });
-              }
+          let resource = collection.getLinkByRel(rel).getHref();
+          collection = this.getCollectionByResource(resource).then(collection => {
+            return this.hop(modifiedPath, collection);
+          }).catch( errorCollection => {
+            return errorCollection;
+          });
         }
       }
-      return collection;
+    }
+    return collection;
+  }
+
+  /**
+   * Get the resource string
+   *
+   * @return {String}
+   */
+  getResource()
+  {
+    return this.resource;
+  }
+
+  /**
+   * getCache
+   *
+   * @since Tue Apr 10 15:19:04 CEST 2018
+   * @return Cache
+   */
+  getCache()
+  {
+    return this.cache;
+  }
+
+  /**
+   * Reset and empty the cache
+   *
+   * @since Tue Apr 10 13:17:40 CEST 2018
+   * @return Client
+   */
+  resetCache()
+  {
+    if (this.cache != null) {
+      this.cache.reset();
     }
 
-    /**
-     * Get the resource string
-     *
-     * @return {String}
-     */
-    getResource()
-    {
-      return this.resource;
-    }
+    return this;
+  }
 
-    /**
-     * getCache
-     *
-     * @since Tue Apr 10 15:19:04 CEST 2018
-     * @return Cache
-     */
-    getCache()
-    {
-      return this.cache;
-    }
+  /**
+   * Get the config object
+   *
+   * @return Object
+   */
+  getConfig()
+  {
+    return this.config;
+  }
 
-    /**
-     * Reset and empty the cache
-     *
-     * @since Tue Apr 10 13:17:40 CEST 2018
-     * @return Client
-     */
-    resetCache()
-    {
-      if (this.cache != null) {
-        this.cache.reset();
-      }
+  /**
+   * Set the global config object
+   *
+   * @return Client
+   */
+  setConfig(config)
+  {
+    this.config = config;
 
-      return this;
-    }
+    return this;
+  }
 }

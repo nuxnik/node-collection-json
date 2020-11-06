@@ -276,6 +276,9 @@ export default class Item extends EntityLinker
 
     return new Promise( (resolve, reject) => {
       axios.delete(this.getHref(), mergedConfig).then( (response) => {
+        if (this.cache !== null) {
+          this.cache.cleanByResource(this.getHref());
+        }
         return resolve(Collection.getByObject(response.data, this.config));
       }).catch( error => {
         return resolve(Collection.getByObject(error.response.data, this.config));

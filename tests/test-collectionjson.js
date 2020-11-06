@@ -316,7 +316,7 @@ describe('Collection+Json Library', () => {
 
   describe('Data Cache', () => {
 
-    xit('should cache the data', (done) => {
+    it('should cache the data', (done) => {
 
       let numberAccessed = 5;
       let coll           = null;
@@ -331,7 +331,7 @@ describe('Collection+Json Library', () => {
       done();
     });
 
-    xit('should not cache the data', (done) => {
+    it('should not cache the data', (done) => {
 
       let resource = "http://example.org/friends/"
       let collection = Collection.getByObject(JSON.parse(validCollection));
