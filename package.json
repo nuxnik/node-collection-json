@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/nuxnik/node-collection-json#readme",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": ">=0.21.2"
     "http-status": "^1.5.0"
   },
   "devDependencies": {
